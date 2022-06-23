@@ -1,8 +1,6 @@
-# complex_rest_dtcd_workspaces
-
 # dtcd_workspaces
 
-[Complex rest](https://github.com/ISGNeuroTeam/complex_rest/tree/develop) plugin for graph management.
+[Complex rest](https://github.com/ISGNeuroTeam/complex_rest/tree/develop) plugin for workspaces management.
 
 ## Getting Started
 

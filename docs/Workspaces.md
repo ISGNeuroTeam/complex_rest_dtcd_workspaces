@@ -2,7 +2,7 @@
 
 ## Directories
 
-Previously you were able to save workspaces only in a special workspaces root folder specified in dtcd_server.conf section [workspaces] base_path
+Previously you were able to save workspaces only in a special workspaces root folder specified in dtcd_workspaces.conf section [workspaces] base_path
 
 Now you have the opportunity to create dirs inside this directory and place your workspaces there
 

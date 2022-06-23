@@ -1,7 +1,7 @@
 import configparser
 import os
 from pathlib import Path
-from core.settings.ini_config import merge_ini_config_with_defaults, merge_dicts
+from core.settings.ini_config import merge_ini_config_with_defaults
 
 
 PROJECT_DIR = Path(__file__).parent
@@ -22,7 +22,7 @@ default_ini_config = {
 
 # main config
 config_parser = configparser.ConfigParser()
-config_parser.read(PROJECT_DIR / 'dtcd_server.conf')
+config_parser.read(PROJECT_DIR / 'dtcd_workspaces.conf')
 # FIXME option false in config gets converted from 'false' to True
 ini_config = merge_ini_config_with_defaults(config_parser, default_ini_config)
 

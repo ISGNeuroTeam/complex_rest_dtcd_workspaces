@@ -6,7 +6,7 @@ from rest_auth.authentication import User
 from rest_auth.exceptions import AccessDeniedError
 import logging
 
-logger = logging.getLogger('dtcd_server')
+logger = logging.getLogger('dtcd_workspaces')
 
 
 def access_denied_response(user: User):
