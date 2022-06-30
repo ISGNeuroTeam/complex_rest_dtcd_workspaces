@@ -131,4 +131,4 @@ dtcd_workspaces/public/*.html
 make_build/
 
 dtcd_workspaces/pages/*.json
-dtcd_workspaces/root_workspaces_directory/
+complex_rest_dtcd_workspaces/root_workspaces_directory/

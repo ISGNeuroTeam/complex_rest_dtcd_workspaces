@@ -1,4 +1,4 @@
-# dtcd_workspaces
+# DTCD Workspaces
 
 [Complex rest](https://github.com/ISGNeuroTeam/complex_rest/tree/develop) plugin for workspaces management.
 
@@ -10,6 +10,19 @@ These instructions will get you a copy of the project up and running on your loc
 ### Prerequisites
 
 - Deploy [complex rest](https://github.com/ISGNeuroTeam/complex_rest/).
+
+### Installing
+
+* Make symlink for ./dtcd_workspaces/dtcd_workspaces in plugins directory
+* Run complex rest server
+
+## Running the tests
+Run all tests:
+```bash
+python ./complex_rest/manage.py test ./plugin_dev/dtcd_workspaces/tests --settings=core.settings.test
+```
+
+## Deployment
 
 ### Deploy from Nexus
 
@@ -40,7 +53,6 @@ For this plugin, you can get the latest build from Nexus.
 * Copy configuration files from `docs/` to `dtcd_workspaces/` with the following command:
     ```sh
     cp docs/dtcd_workspaces.conf.example  dtcd_workspaces/dtcd_workspaces.conf
-	cp docs/log_configuration.json.example  dtcd_workspaces/log_configuration.json
     ```
 * Create virtual environment
     ```sh
@@ -56,6 +68,9 @@ For this plugin, you can get the latest build from Nexus.
 
 ## Built With
 
+* [Django](https://docs.djangoproject.com/en/3.2/) - The web framework used
+
+
 ## Versioning
 
 We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
@@ -68,3 +83,8 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 ## License
 
 [OT.PLATFORM. License agreement.](LICENSE.md)
+
+## Acknowledgments
+
+* Hat tip to anyone whose code was used
+* Inspiration

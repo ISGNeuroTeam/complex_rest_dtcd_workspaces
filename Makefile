@@ -1,7 +1,7 @@
 #.SILENT:
 SHELL = /bin/bash
 
-plugin_name := dtcd_workspaces
+plugin_name := complex_rest_dtcd_workspaces
 build_dir := make_build
 plugin_dir := $(build_dir)/$(plugin_name)
 requirements_file := requirements.txt
@@ -26,13 +26,13 @@ pack: make_build
 	$(SET_VERSION)
 	$(SET_BRANCH)
 	rm -f $(plugin_name)-*.tar.gz
-	cd $(build_dir); tar czf ../$(plugin_name)-$(VERSION)-$(BRANCH).tar.gz $(plugin_name)
+	cd $(build_dir); tar czf ../$(plugin_name)-$(VERSION)-$(BRANCH).tar.gz $(plugin_name) --transform "s/^complex_rest_//"
 
 clean_pack: clean_build
 	rm -f $(plugin_name)-*.tar.gz
 
-dtcd_workspaces.tar.gz: build
-	cd $(build_dir); tar czf ../$(plugin_name).tar.gz $(plugin_name) && rm -rf ../$(build_dir)
+complex_rest_dtcd_workspaces.tar.gz: build
+	cd $(build_dir); tar czf ../$(plugin_name).tar.gz $(plugin_name) && rm -rf ../$(build_dir) --transform "s/^complex_rest_//"
 
 build: make_build
 
