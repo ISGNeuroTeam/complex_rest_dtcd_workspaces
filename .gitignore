@@ -1,0 +1,134 @@
+# Django #
+*.log
+*.pot
+*.pyc
+__pycache__
+media
+
+# Backup files #
+*.bak
+
+# PyCharm #
+.idea/
+*.iws /out/
+
+# Python #
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.Python build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# celery
+celerybeat-schedule.*
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+
+# Sublime Text #
+*.tmlanguage.cache
+*.tmPreferences.cache
+*.stTheme.cache
+*.sublime-workspace
+*.sublime-project
+
+# sftp configuration file
+sftp-config.json
+
+# Package control specific files Package
+Control.last-run
+Control.ca-list
+Control.ca-bundle
+Control.system-ca-bundle
+GitHub.sublime-settings
+
+# Ignore the default SQLite database.
+*.sqlite3
+*.db
+
+# redis dump
+*.rdb
+
+# VS Code internals
+.vscode/
+
+# flake8 config
+.flake8
+
+# my stuff
+todo.md
+MakefileLocal
+requirements_local.txt
+
+start.sh
+stop.sh
+dtcd_workspaces-*.tar.gz
+# symlinks to config files in plugin directory
+dtcd_workspaces/*.conf
+dtcd_workspaces/*.json
+venv.tar.gz
+
+nginx/
+*.conf
+dtcd_workspaces/plugins/DTCD*
+dtcd_workspaces/public/fonts
+dtcd_workspaces/public/*.js
+dtcd_workspaces/public/*.ico
+dtcd_workspaces/public/*.html
+make_build/
+
+dtcd_workspaces/pages/*.json
+dtcd_workspaces/root_workspaces_directory/
