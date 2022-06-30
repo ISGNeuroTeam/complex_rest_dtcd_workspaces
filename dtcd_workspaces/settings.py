@@ -36,9 +36,12 @@ if not os.path.isdir(PROJECT_DIR / "public"):
 # workspace configuration
 WORKSPACE_BASE_PATH = ini_config['workspace']['base_path']
 WORKSPACE_TMP_PATH = ini_config['workspace']['tmp_path']
+DIR_META_NAME = ini_config['workspace'].get('dir_meta', '.DIR_INFO')
 
 if not os.path.isdir(WORKSPACE_BASE_PATH):
     os.mkdir(Path(WORKSPACE_BASE_PATH))
+    with open(Path(WORKSPACE_BASE_PATH) / DIR_META_NAME, 'w') as fw:
+        fw.write('{"id": ""}')
 
 if not os.path.isdir(WORKSPACE_TMP_PATH):
     os.mkdir(Path(WORKSPACE_TMP_PATH))

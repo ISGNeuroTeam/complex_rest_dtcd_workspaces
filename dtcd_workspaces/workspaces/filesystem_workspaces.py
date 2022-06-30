@@ -12,6 +12,7 @@ from rest_auth.authentication import User
 from rest_auth.authorization import BaseProtectedResource, check_authorization
 from rest_auth.models import ProtectedResource
 from .utils import manager, _get_dir_path, _is_uuid4, _decode_name, _rename, _remove, _copy, _get_file_name, _encode_name
+from ..settings import DIR_META_NAME
 
 
 class AuthCovered(BaseProtectedResource):
@@ -89,7 +90,8 @@ class BaseWorkspace(abc.ABC):
         'title': 'title',
         'creation_time': 'creation_time',
         'modification_time': 'modification_time',
-        'is_dir': 'is_dir'
+        'is_dir': 'is_dir',
+        'meta': 'meta'
     }
 
     manager = manager
@@ -103,6 +105,7 @@ class BaseWorkspace(abc.ABC):
                     setattr(self, self.kwargs_map[key], value)
         self.path = self.path if hasattr(self, 'path') else _decode_name(path)
         self.title = self.title if hasattr(self, 'title') else title
+        self.meta = self.meta if hasattr(self, 'meta') else None
         self.creation_time = getattr(self, 'creation_time', creation_time or datetime.datetime.now().timestamp())
         self.modification_time = getattr(self, 'modification_time', modification_time or self.creation_time)
         self.is_dir = False
@@ -126,7 +129,7 @@ class BaseWorkspace(abc.ABC):
         return str(uuid.uuid4())
 
     def as_dict(self):
-        return self.__dict__
+        return {k: v for k, v in self.__dict__.items() if not k.startswith('_')}
 
     def get_ids_chain(self, from_path: Path):
         """Get ids of object itself and all the object's parents"""
@@ -183,7 +186,6 @@ class Workspace(BaseWorkspace, AuthCovered):
     def as_dict(self):
         self._load_meta()
         res: dict = super().as_dict()
-        res.pop("_from_file", None)
         return res
 
     def as_json(self):
@@ -199,12 +201,14 @@ class Workspace(BaseWorkspace, AuthCovered):
         if self.content is None:  # content was not loaded
             self.creation_time = self._workspace_data.get('creation_time')
             self.title = self._workspace_data.get('title')
+            self.meta = self._workspace_data.get('meta')
             self.modification_time = os.path.getmtime(self.filesystem_path)
 
     def _load_content(self):
         self.content = self._workspace_data.get('content')
         self.creation_time = self._workspace_data.get('creation_time')
         self.title = self._workspace_data.get('title')
+        self.meta = self._workspace_data.get('meta')
 
     def _read_workspace_from_file(self) -> Dict:
         try:
@@ -216,7 +220,7 @@ class Workspace(BaseWorkspace, AuthCovered):
 
     def _save_to_file(self):
         self.manager.write_file(
-            {'title': self.title, 'content': self.content, 'creation_time': self.creation_time},
+            self.as_dict(),
             self.filesystem_path
         )
 
@@ -277,13 +281,16 @@ class Workspace(BaseWorkspace, AuthCovered):
 class Directory(BaseWorkspace, AuthCovered):
     kwargs_map = dict(**BaseWorkspace.kwargs_map, id='id')
 
-    dir_metafile_name = '.DIR_INFO'
+    dir_metafile_name = DIR_META_NAME
 
     def __init__(self, *args, uid: str = None, path: str = None, title: str = None, creation_time: float = None,
                  modification_time: float = None, **kwargs):
         if '_conf' in kwargs:
             _conf = kwargs['_conf']
-            if 'title' not in _conf and "new_title" not in _conf and "new_path" not in _conf:
+            if 'title' not in _conf and \
+                    "new_title" not in _conf and \
+                    "new_path" not in _conf and \
+                    "new_meta" not in _conf:
                 raise WorkspaceManagerException(workspacemanager_exception.NO_DIR_NAME)
             if 'new_path' in _conf:
                 pass  # move
@@ -317,7 +324,7 @@ class Directory(BaseWorkspace, AuthCovered):
                 raise WorkspaceManagerException(workspacemanager_exception.UNABLE_TO_MKDIR, self.filesystem_path)
 
             self.manager.write_file(
-                {'id': self.id, 'creation_time': self.creation_time},
+                self.as_dict(),
                 self._meta_file
             )
         else:
@@ -357,6 +364,7 @@ class Directory(BaseWorkspace, AuthCovered):
                     "id": meta_info.get("id"),
                     'title': meta_info.get("title"),
                     'creation_time': meta_info.get("creation_time"),
+                    'meta': meta_info.get("meta"),
                     'modification_time': os.path.getmtime(dir_path)
                 }
         return {}
@@ -445,6 +453,8 @@ class Directory(BaseWorkspace, AuthCovered):
             self._move(_conf['new_path'])
         elif 'new_title' in _conf:
             self._update_title(_conf['new_title'])
+        elif 'new_meta' in _conf:
+            self._update_meta(_conf['new_meta'])
         else:
             raise WorkspaceManagerException(workspacemanager_exception.NEW_TITLE_OR_PATH_NOT_PROVIDED)
 
@@ -453,6 +463,13 @@ class Directory(BaseWorkspace, AuthCovered):
         # Call auth parent class to update its record if it has changed
         self.update_auth_record(_id=self.id, title=new_title)
         self.title = new_title
+
+    def _update_meta(self, new_meta: dict):
+        self.meta = new_meta
+        self.manager.write_file(
+            self.as_dict(),
+            self._meta_file
+        )
 
     def _rename(self, title: str):
         if self.filesystem_path == self.manager.final_path:

@@ -4,3 +4,4 @@ level = INFO
 [workspace]
 base_path = /opt/otp/complex_rest/plugins/dtcd_workspaces/root_workspaces_directory
 tmp_path = /opt/otp/complex_rest/plugins/dtcd_workspaces/tmp
+dir_meta = .DIR_INFO
