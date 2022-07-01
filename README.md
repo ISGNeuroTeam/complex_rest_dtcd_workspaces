@@ -27,8 +27,9 @@ python ./complex_rest/manage.py test ./plugin_dev/dtcd_workspaces/tests --settin
 ### Deploy from Nexus
 
 For this plugin, you can get the latest build from Nexus.
-
+* Unpack archive into `complex_rest/plugins` directory.
 * Run complex rest server.
+* python ./complex_rest/manage.py create_root_records
 
 ### Deploy via Make
 
