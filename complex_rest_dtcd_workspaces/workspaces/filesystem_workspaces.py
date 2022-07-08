@@ -209,6 +209,7 @@ class Workspace(BaseWorkspace, AuthCovered):
         self.creation_time = self._workspace_data.get('creation_time')
         self.title = self._workspace_data.get('title')
         self.meta = self._workspace_data.get('meta')
+        self.modification_time = os.path.getmtime(self.filesystem_path)
 
     def _read_workspace_from_file(self) -> Dict:
         try:
@@ -259,6 +260,7 @@ class Workspace(BaseWorkspace, AuthCovered):
 
         _copy(self.filesystem_path, target.filesystem_path)
         self._delete_from_file()
+        self.path = path
 
     def _update_workspace_data(self, _conf: dict = None):
         # load all the workspace data from file
@@ -268,6 +270,7 @@ class Workspace(BaseWorkspace, AuthCovered):
             if key in self.kwargs_map:
                 setattr(self, self.kwargs_map[key], value)
         # write data back
+        self._from_file = None  # cached values should be purged, because of update on file system
         self.save()
 
     @check_authorization(action='workspace.delete')
@@ -414,6 +417,7 @@ class Directory(BaseWorkspace, AuthCovered):
     @check_authorization(action='workspace.read')
     def read(self) -> dict:
         if self.title:
+            self.modification_time = os.path.getmtime(self.filesystem_path)
             return self.as_dict()
         if not self.path:
             raise WorkspaceManagerException(workspacemanager_exception.IS_ROOT)
@@ -426,8 +430,10 @@ class Directory(BaseWorkspace, AuthCovered):
         for item in self._iterdir():
             if item.can_read_no_except():
                 if isinstance(item, Workspace):
+                    item.modification_time = os.path.getmtime(item.filesystem_path)
                     workspaces.append(item.as_dict())
                 elif isinstance(item, Directory):
+                    item.modification_time = os.path.getmtime(item.filesystem_path)
                     directories.append(item.as_dict())
 
         return {'workspaces': workspaces, 'directories': directories}
@@ -463,6 +469,7 @@ class Directory(BaseWorkspace, AuthCovered):
         # Call auth parent class to update its record if it has changed
         self.update_auth_record(_id=self.id, title=new_title)
         self.title = new_title
+        self.path = str(Path(self.path).parent / new_title)  # update path according to new_title
 
     def _update_meta(self, new_meta: dict):
         self.meta = new_meta
@@ -490,6 +497,7 @@ class Directory(BaseWorkspace, AuthCovered):
 
         _copy(self.filesystem_path, target.filesystem_path)
         self._delete_directory()
+        self.path = str(Path(path) / self.title)
 
     @check_authorization(action='workspace.delete')
     def delete(self):
