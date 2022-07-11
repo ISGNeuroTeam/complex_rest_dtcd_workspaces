@@ -32,7 +32,7 @@ clean_pack: clean_build
 	rm -f $(plugin_name)-*.tar.gz
 
 complex_rest_dtcd_workspaces.tar.gz: build
-	cd $(build_dir); tar czf ../$(plugin_name).tar.gz $(plugin_name) && rm -rf ../$(build_dir) --transform "s/^complex_rest_//"
+	cd $(build_dir); tar czf ../$(plugin_name).tar.gz $(plugin_name) --transform "s/^complex_rest_//" && rm -rf ../$(build_dir)
 
 build: make_build
 
