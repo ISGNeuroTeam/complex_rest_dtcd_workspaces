@@ -52,6 +52,8 @@ DIR_META_NAME = ini_config['workspace'].get('dir_meta', '.DIR_INFO')
 
 if not os.path.isdir(WORKSPACE_BASE_PATH):
     os.mkdir(Path(WORKSPACE_BASE_PATH))
+
+if not (Path(WORKSPACE_BASE_PATH) / DIR_META_NAME).exists():
     with open(Path(WORKSPACE_BASE_PATH) / DIR_META_NAME, 'w') as fw:
         fw.write('{"id": ""}')
 
