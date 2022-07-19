@@ -177,13 +177,6 @@ class TestWorkspaceDirs(TransactionTestCase):
         self.assertEqual(title, dr['title'])
         self.assertEqual(True, dr['is_dir'])
 
-    def test_get_root(self):
-        try:
-            self.root_dir.accessed_by(self.admin).read()  # you can't read/move/rename root, only list
-            self.assertTrue(False)
-        except WorkspaceManagerException:
-            self.assertTrue(True)
-
     def test_get_workspace(self):
         parent_title = 'in_root_dir'
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": parent_title})

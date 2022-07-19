@@ -35,7 +35,7 @@ To avoid listing and get **workspace_path** directory info add **dir** query str
 
 If both **dir** and **id** are provided, **id** will be ignored
 
-You can't get root workspace directory info (you also can't rename it or move via API)
+You can get root workspace directory info (but you can't rename it or move via API)
 ___
 - POST: 
 

@@ -430,7 +430,7 @@ class Directory(BaseWorkspace, AuthCovered):
             self.modification_time = os.path.getmtime(self.filesystem_path)
             return self.as_dict()
         if not self.path:
-            raise WorkspaceManagerException(workspacemanager_exception.IS_ROOT)
+            return self.as_dict()
         raise WorkspaceManagerException(workspacemanager_exception.NO_DIR, self.filesystem_path)
 
     @check_authorization(action='workspace.read')
