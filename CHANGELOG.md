@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Fixed:
 - You can now get root dir info
+- Listed directory info added to listing
 
 ## [0.2.3] - 2022-07-18
 

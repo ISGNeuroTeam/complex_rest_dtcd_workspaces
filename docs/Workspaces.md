@@ -20,6 +20,8 @@ ___
 
 By default, lists all workspaces and directories' info in **workspace_path** directory. Info doesn't return workspace content! ("content": null)
 
+Format: {"current_directory": {info about listed directory}, "contents": \[info about contents]}
+
 Info contains:
 1. id
 2. path

@@ -445,8 +445,8 @@ class Directory(BaseWorkspace, AuthCovered):
                 elif isinstance(item, Directory):
                     item.modification_time = os.path.getmtime(item.filesystem_path)
                     directories.append(item.as_dict())
-
-        return {'workspaces': workspaces, 'directories': directories}
+        current_dir = self.read()
+        return {'workspaces': workspaces, 'directories': directories, 'current_directory': current_dir}
 
     @check_authorization(action='workspace.create')
     def create_workspace(self, *args, workspace_conf: dict = None) -> str:

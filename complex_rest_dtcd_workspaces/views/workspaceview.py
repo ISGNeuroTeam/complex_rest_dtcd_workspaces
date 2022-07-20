@@ -27,7 +27,9 @@ class WorkspaceView(APIView):
                 return access_denied_response(request.user)
             except Exception as e:
                 return Response(str(e), status.HTTP_400_BAD_REQUEST)
-            return Response(content.get('workspaces', []) + content.get('directories', []), status.HTTP_200_OK)
+            response = {'current_directory': content.get('current_directory'),
+                        'content': content.get('workspaces', []) + content.get('directories', [])}
+            return Response(response, status.HTTP_200_OK)
         elif 'dir' in qs:
             try:
                 workspace = Directory(path=workspace_path).accessed_by(request.user).read()
