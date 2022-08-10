@@ -12,7 +12,7 @@ from rest_auth.authentication import User
 from rest_auth.authorization import BaseProtectedResource, check_authorization
 from rest_auth.models import ProtectedResource
 from .utils import manager, _get_dir_path, _is_uuid4, _decode_name, _rename, _remove, _copy, _get_file_name, _encode_name
-from ..settings import DIR_META_NAME
+from ..settings import DIR_META_NAME, ROLE_MODEL_ACTIONS
 
 
 class AuthCovered(BaseProtectedResource):
@@ -27,6 +27,7 @@ class AuthCovered(BaseProtectedResource):
                 break
         if res:
             super().__init__(keychain_id=res.keychain.pk, owner_id=res.owner.pk)
+        self.permissions = None
 
     @check_authorization(action='workspace.create')
     def can_create(self):
@@ -80,6 +81,13 @@ class AuthCovered(BaseProtectedResource):
         resources = ProtectedResource.objects.filter(object_id__in=ids)
         resources.delete()
 
+    def _load_permissions(self):
+        if hasattr(self, 'user') and self.user:
+            self.permissions = {'create': self.can_create_no_except(),
+                                'read': self.can_read_no_except(),
+                                'update': self.can_update_no_except(),
+                                'delete': self.can_delete_no_except()}
+
 
 class BaseWorkspace(abc.ABC):
     """Represents any object related to workspaces (currently Workspace and Directory)"""
@@ -107,7 +115,7 @@ class BaseWorkspace(abc.ABC):
         self.title = self.title if hasattr(self, 'title') else title
         self.meta = self.meta if hasattr(self, 'meta') else None
         self.creation_time = getattr(self, 'creation_time', creation_time or datetime.datetime.now().timestamp())
-        self.modification_time = getattr(self, 'modification_time', modification_time or self.creation_time)
+        self.modification_time = None
         self.is_dir = False
 
     @classmethod
@@ -124,11 +132,16 @@ class BaseWorkspace(abc.ABC):
     def filesystem_path(self):
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def _load_meta(self):
+        raise NotImplementedError
+
     @classmethod
     def _get_new_id(cls) -> str:
         return str(uuid.uuid4())
 
     def as_dict(self):
+        self._load_meta()
         return {k: v for k, v in self.__dict__.items() if not k.startswith('_')}
 
     def get_ids_chain(self, from_path: Path):
@@ -183,11 +196,6 @@ class Workspace(BaseWorkspace, AuthCovered):
     def get_id(cls, _path: Path):
         return _path.with_suffix('').name
 
-    def as_dict(self):
-        self._load_meta()
-        res: dict = super().as_dict()
-        return res
-
     def as_json(self):
         return json.dumps(self.as_dict())
 
@@ -198,6 +206,7 @@ class Workspace(BaseWorkspace, AuthCovered):
         return self._from_file
 
     def _load_meta(self):
+        self._load_permissions()
         if self.content is None:  # content was not loaded
             self.creation_time = self._workspace_data.get('creation_time')
             self.title = self._workspace_data.get('title')
@@ -209,6 +218,7 @@ class Workspace(BaseWorkspace, AuthCovered):
         self.creation_time = self._workspace_data.get('creation_time')
         self.title = self._workspace_data.get('title')
         self.meta = self._workspace_data.get('meta')
+        self.modification_time = os.path.getmtime(self.filesystem_path)
 
     def _read_workspace_from_file(self) -> Dict:
         try:
@@ -259,6 +269,7 @@ class Workspace(BaseWorkspace, AuthCovered):
 
         _copy(self.filesystem_path, target.filesystem_path)
         self._delete_from_file()
+        self.path = path
 
     def _update_workspace_data(self, _conf: dict = None):
         # load all the workspace data from file
@@ -268,6 +279,7 @@ class Workspace(BaseWorkspace, AuthCovered):
             if key in self.kwargs_map:
                 setattr(self, self.kwargs_map[key], value)
         # write data back
+        self._from_file = None  # cached values should be purged, because of update on file system
         self.save()
 
     @check_authorization(action='workspace.delete')
@@ -407,6 +419,7 @@ class Directory(BaseWorkspace, AuthCovered):
                 setattr(self, self.kwargs_map[key], value)
         if self.filesystem_path != self.manager.final_path:
             self.title = _decode_name(self.filesystem_path.name)
+        self._load_permissions()
 
     def as_json(self):
         return json.dumps(self.as_dict())
@@ -414,9 +427,10 @@ class Directory(BaseWorkspace, AuthCovered):
     @check_authorization(action='workspace.read')
     def read(self) -> dict:
         if self.title:
+            self.modification_time = os.path.getmtime(self.filesystem_path)
             return self.as_dict()
         if not self.path:
-            raise WorkspaceManagerException(workspacemanager_exception.IS_ROOT)
+            return self.as_dict()
         raise WorkspaceManagerException(workspacemanager_exception.NO_DIR, self.filesystem_path)
 
     @check_authorization(action='workspace.read')
@@ -426,11 +440,13 @@ class Directory(BaseWorkspace, AuthCovered):
         for item in self._iterdir():
             if item.can_read_no_except():
                 if isinstance(item, Workspace):
+                    item.modification_time = os.path.getmtime(item.filesystem_path)
                     workspaces.append(item.as_dict())
                 elif isinstance(item, Directory):
+                    item.modification_time = os.path.getmtime(item.filesystem_path)
                     directories.append(item.as_dict())
-
-        return {'workspaces': workspaces, 'directories': directories}
+        current_dir = self.read()
+        return {'workspaces': workspaces, 'directories': directories, 'current_directory': current_dir}
 
     @check_authorization(action='workspace.create')
     def create_workspace(self, *args, workspace_conf: dict = None) -> str:
@@ -463,6 +479,7 @@ class Directory(BaseWorkspace, AuthCovered):
         # Call auth parent class to update its record if it has changed
         self.update_auth_record(_id=self.id, title=new_title)
         self.title = new_title
+        self.path = str(Path(self.path).parent / new_title)  # update path according to new_title
 
     def _update_meta(self, new_meta: dict):
         self.meta = new_meta
@@ -490,6 +507,7 @@ class Directory(BaseWorkspace, AuthCovered):
 
         _copy(self.filesystem_path, target.filesystem_path)
         self._delete_directory()
+        self.path = str(Path(path) / self.title)
 
     @check_authorization(action='workspace.delete')
     def delete(self):

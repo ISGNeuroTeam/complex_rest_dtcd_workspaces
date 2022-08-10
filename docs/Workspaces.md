@@ -20,6 +20,8 @@ ___
 
 By default, lists all workspaces and directories' info in **workspace_path** directory. Info doesn't return workspace content! ("content": null)
 
+Format: {"current_directory": {info about listed directory}, "contents": \[info about contents]}
+
 Info contains:
 1. id
 2. path
@@ -35,7 +37,7 @@ To avoid listing and get **workspace_path** directory info add **dir** query str
 
 If both **dir** and **id** are provided, **id** will be ignored
 
-You can't get root workspace directory info (you also can't rename it or move via API)
+You can get root workspace directory info (but you can't rename it or move via API)
 ___
 - POST: 
 
