@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.5] - 2022-08-18
+### Added:
+- Database initialization script `database_init.sh`.
+
 ## [0.2.4] - 2022-08-10
 ### Fixed:
 - You can now get root dir info.
