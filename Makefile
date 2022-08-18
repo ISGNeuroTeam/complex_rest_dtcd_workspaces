@@ -45,6 +45,9 @@ make_build: venv.tar.gz
 
 	cp *.md $(plugin_dir)
 	cp *.py $(plugin_dir)
+#	scripts
+	cp -u docs/scripts/*.sh $(plugin_dir)
+	chmod o+x $(plugin_dir)/*.sh
 
 	# virtual environment
 	mkdir $(plugin_dir)/venv
