@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.6] - 2022-08-19
+### Added:
+- Default permissions to `-rwxr-xr-x` (`755`) on initialization scripts.
+- Nice messages in `create_root_records` command.
+
+### Fixed:
+- Bug in `database_init.sh`: project's `venv` was not activated due to a missing symbol before variable name.
+
 ## [0.2.5] - 2022-08-18
 ### Added:
 - Database initialization script `database_init.sh`.
