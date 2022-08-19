@@ -13,4 +13,6 @@ cd $SCRIPT_DIR/../..
 python="venv/bin/python"
 
 # create initial entries
+# limit the loaded plugins to this particular one
+export COMPLEX_REST_PLUGIN_NAME="dtcd_workspaces"
 $python complex_rest/manage.py create_root_records
