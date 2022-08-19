@@ -13,4 +13,4 @@ cd $SCRIPT_DIR/../..
 python="venv/bin/python"
 
 # create initial entries
-python complex_rest/manage.py create_root_records
+$python complex_rest/manage.py create_root_records
