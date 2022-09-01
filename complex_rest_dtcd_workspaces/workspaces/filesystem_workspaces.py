@@ -483,8 +483,10 @@ class Directory(BaseWorkspace, AuthCovered):
 
     def _update_meta(self, new_meta: dict):
         self.meta = new_meta
+        data = self.as_dict()
+        data['meta'] = new_meta
         self.manager.write_file(
-            self.as_dict(),
+            data,
             self._meta_file
         )
 
