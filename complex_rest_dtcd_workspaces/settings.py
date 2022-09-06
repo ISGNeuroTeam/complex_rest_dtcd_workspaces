@@ -5,6 +5,18 @@ from core.settings.ini_config import merge_ini_config_with_defaults
 
 
 PROJECT_DIR = Path(__file__).parent
+PLUGIN_NAME = PROJECT_DIR.name
+
+ROLE_MODEL_AUTH_COVERED_CLASSES = [
+    "workspaces.filesystem_workspaces.AuthCoveredWorkspace",
+    "workspaces.filesystem_workspaces.AuthCoveredDirectory",
+    "workspaces.filesystem_workspaces.WorkspacesKeychain"
+]
+
+ROLE_MODEL_AUTH_COVERED_CLASSES = [
+    PLUGIN_NAME + "." + item  # plugin.relpathtoclass
+    for item in ROLE_MODEL_AUTH_COVERED_CLASSES
+]
 
 ROLE_MODEL_ACTIONS = {
     'workspace.create': {
@@ -59,3 +71,13 @@ if not (Path(WORKSPACE_BASE_PATH) / DIR_META_NAME).exists():
 
 if not os.path.isdir(WORKSPACE_TMP_PATH):
     os.mkdir(Path(WORKSPACE_TMP_PATH))
+
+# configure your own database if you need
+DATABASE = {
+        "ENGINE": 'django.db.backends.postgresql',
+        "NAME": ini_config['db_conf']['database'],
+        "USER": ini_config['db_conf']['user'],
+        "PASSWORD": ini_config['db_conf']['password'],
+        "HOST": ini_config['db_conf']['host'],
+        "PORT": ini_config['db_conf']['port']
+}

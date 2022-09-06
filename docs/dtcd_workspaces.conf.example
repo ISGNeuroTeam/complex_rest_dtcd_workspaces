@@ -5,3 +5,13 @@ level = INFO
 base_path = /opt/otp/complex_rest/plugins/dtcd_workspaces/root_workspaces_directory
 tmp_path = /opt/otp/complex_rest/plugins/dtcd_workspaces/tmp
 dir_meta = .DIR_INFO
+
+[role_model]
+workspace_root_security_zone_name = root_workspaces_directory
+
+[db_conf]
+host = localhost
+port = 5433
+database = dtcd_workspaces
+user = dtcd_workspaces
+password = password
