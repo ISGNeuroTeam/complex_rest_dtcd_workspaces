@@ -23,7 +23,7 @@ class WorkspaceView(APIView):
         if 'id' not in qs and 'dir' not in qs:  # dir means that user wants dir info not listing the dir
             try:
                 logger.debug(f'List directory with path: {workspace_path}')
-                content = Directory(path=workspace_path).accessed_by(request.user).list()
+                content = Directory(path=workspace_path).list()
             except AccessDeniedError as e:
                 logger.info(f'Access denied for listing directory with path: {workspace_path}. '
                              f'User: {request.user.username}')
@@ -38,7 +38,7 @@ class WorkspaceView(APIView):
         elif 'dir' in qs:
             try:
                 logger.debug(f'Get directory info with path: {workspace_path}')
-                directory = Directory(path=workspace_path).accessed_by(request.user).read()
+                directory = Directory(path=workspace_path).read()
             except AccessDeniedError as e:
                 logger.info(f'Access denied to get directory info with path: {workspace_path}. '
                              f'User: {request.user.username}')
@@ -51,7 +51,7 @@ class WorkspaceView(APIView):
         _id = qs['id'][0]
         try:
             logger.debug(f'Get workspace info with path - {workspace_path} and id - {_id}')
-            workspace = Workspace(uid=_id, path=workspace_path).accessed_by(request.user).read()
+            workspace = Workspace(uid=_id, path=workspace_path).read()
         except AccessDeniedError as e:
             logger.info(f'Access denied to get workspace with path - {workspace_path} and id - {_id}')
             return access_denied_response(request.user)
@@ -69,13 +69,17 @@ class WorkspaceView(APIView):
             try:
                 if 'dir' not in conf:
                     logger.debug(f'Create workspace with path - {workspace_path} and title - {conf.get("title")}')
+                    ws = Workspace(path=workspace_path, _conf=conf)
+                    ws.save()
                     created.append(
-                        Directory(path=workspace_path).accessed_by(request.user).create_workspace(workspace_conf=conf)
+                        ws.id
                     )
                 else:
                     logger.debug(f'Create directory with path - {workspace_path} and title - {conf.get("title")}')
+                    dr = Directory(path=workspace_path, _conf=conf)
+                    dr.save()
                     created.append(
-                        Directory(path=workspace_path).accessed_by(request.user).create_dir(_conf=conf)
+                        dr.id
                     )
             except AccessDeniedError as e:
                 logger.info(f'Access denied creating directory or workspace with path - {workspace_path} '
@@ -97,12 +101,12 @@ class WorkspaceView(APIView):
                 if 'id' in conf:
                     logger.debug(f'Edit workspace with path - {workspace_path} and id - {conf.get("id")}')
                     edited.append(
-                        Workspace(_conf=conf, path=workspace_path).accessed_by(request.user).update(_conf=conf)
+                        Workspace(_conf=conf, path=workspace_path).update(_conf=conf)
                     )
                 else:
                     logger.debug(f'Edit directory with path - {workspace_path} and title - {conf.get("title")}')
                     edited.append(
-                        Directory(_conf=conf, path=workspace_path).accessed_by(request.user).update(_conf=conf)
+                        Directory(_conf=conf, path=workspace_path).update(_conf=conf)
                     )
             except AccessDeniedError as e:
                 logger.info(f'Access denied editing workspace or directory with path - {workspace_path}')
@@ -119,7 +123,7 @@ class WorkspaceView(APIView):
         if not ids:
             try:
                 logger.debug(f'Delete directory with path - {workspace_path}')
-                Directory(path=workspace_path).accessed_by(request.user).delete()
+                Directory(path=workspace_path).delete()
             except AccessDeniedError as e:
                 logger.info(f'Access denied deleting directory with path - {workspace_path}')
                 return access_denied_response(request.user)
@@ -130,7 +134,7 @@ class WorkspaceView(APIView):
             for _id in ids:
                 try:
                     logger.debug(f'Delete workspace with path - {workspace_path} and id - {_id}')
-                    Workspace(uid=_id, path=workspace_path).accessed_by(request.user).delete()
+                    Workspace(uid=_id, path=workspace_path).delete()
                 except AccessDeniedError as e:
                     logger.info(f'Access denied deleting workspace with path - {workspace_path} and id - {_id}')
                     return access_denied_response(request.user)
