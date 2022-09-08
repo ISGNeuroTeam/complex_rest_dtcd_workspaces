@@ -1,9 +1,9 @@
-import datetime
 import json
 import os.path
 from pathlib import Path
 from typing import List, Dict, Iterable
 from dtcd_workspaces.workspaces.directory_content import DirectoryContent
+from dtcd_workspaces.workspaces.workspace import Workspace
 from dtcd_workspaces.workspaces import workspacemanager_exception
 from dtcd_workspaces.workspaces.workspacemanager_exception import WorkspaceManagerException
 from .utils import _get_dir_path, _decode_name, _rename, _remove, _copy, _encode_name
@@ -21,7 +21,9 @@ class Directory(DirectoryContent):
         'id': 'id'
     }
 
-    def __init__(self, *args, path: str = None, title: str = None, creation_time: float = None, **kwargs):
+    def __init__(self, *args, path: str = None, **kwargs):
+        super().__init__(path, **kwargs)
+
         if '_conf' in kwargs:
             _conf = kwargs['_conf']
             if 'title' not in _conf and \
@@ -33,22 +35,19 @@ class Directory(DirectoryContent):
                 pass  # move
             elif 'title' in _conf:
                 self.validate_dir_name(_conf['title'])
-                self.path = str(Path(path) / _conf['title'])  # new directory
+                self.title = _conf['title']
+                self.path = str(Path(self.path) / self.title)  # new directory
             elif 'new_title' in _conf:
                 self.validate_dir_name(_conf['new_title'])  # rename
             for key, value in kwargs.get('_conf', {}).items():
                 if key in self.kwargs_map:
                     setattr(self, self.kwargs_map[key], value)
-        super().__init__(path)
-        self.title = self.title if hasattr(self, 'title') else title
-        self.meta = self.meta if hasattr(self, 'meta') else None
-        self.creation_time = getattr(self, 'creation_time', creation_time or datetime.datetime.now().timestamp())
-        self.modification_time = None
-        self.id = kwargs.get('_conf', {}).get('id', self._get_new_id())  # get id from _conf for put method
+
+        self.is_dir = True
+
         if self.exists():
             self._load_meta()
 
-        self.is_dir = True
 
     def _write_directory(self):
         if not self.filesystem_path.exists():
@@ -82,6 +81,10 @@ class Directory(DirectoryContent):
     @property
     def _meta_file(self):
         return self.filesystem_path / self.dir_metafile_name
+
+    @property
+    def filesystem_path(self):
+        return self.manager.get_filesystem_path(self.path)
 
     @classmethod
     def read_dir_meta(cls, dir_path: Path) -> dict:
@@ -117,7 +120,12 @@ class Directory(DirectoryContent):
                 yield retrieved
 
     def _retrieve_directory_content(self, item: Path) -> DirectoryContent:
-        return DirectoryContent(path=str(item))
+        if DirectoryContent.is_workspace(item):
+            human_readable_path = self.manager.get_human_readable_path(item.parent)
+            return Workspace(path=_encode_name(human_readable_path), _conf={'id': Workspace.get_id(item)})
+        elif DirectoryContent.is_directory(item):
+            human_readable_path = self.manager.get_human_readable_path(item)
+            return Directory(path=_encode_name(human_readable_path))
 
     def _load_meta(self):
         if not self.filesystem_path.exists():
@@ -145,11 +153,10 @@ class Directory(DirectoryContent):
         directories, workspaces = [], []
         for item in self._iterdir():
             # if item.can_read_no_except():
-            if item.is_workspace(Path(item.path)):
-                item.modification_time = os.path.getmtime(item.filesystem_path)
+            item.modification_time = os.path.getmtime(item.filesystem_path)
+            if isinstance(item, Workspace):
                 workspaces.append(item.as_dict())
-            elif item.is_directory(Path(item.path)):
-                item.modification_time = os.path.getmtime(item.filesystem_path)
+            elif isinstance(item, Directory):
                 directories.append(item.as_dict())
         return {'workspaces': workspaces, 'directories': directories, 'current_directory': self.read()}
 

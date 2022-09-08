@@ -1,8 +1,7 @@
 from rest.views import APIView
 from rest.response import Response, status
 from rest.permissions import IsAuthenticated
-from dtcd_workspaces.workspaces.filesystem_workspaces import WorkspacesKeychain
-from rest_auth.authentication import User
+from dtcd_workspaces.models.models import WorkspacesKeychain
 import logging
 
 logger = logging.getLogger('dtcd_workspaces')

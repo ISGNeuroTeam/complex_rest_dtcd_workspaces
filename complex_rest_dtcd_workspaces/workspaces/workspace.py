@@ -1,4 +1,3 @@
-import datetime
 import json
 import os.path
 from pathlib import Path
@@ -18,22 +17,23 @@ class Workspace(DirectoryContent):
         'modification_time': 'modification_time',
         'is_dir': 'is_dir',
         'meta': 'meta',
-        'content': 'content'
+        'content': 'content',
     }
 
-    def __init__(self, *args, path: str = None, title: str = None, creation_time: float = None, **kwargs):
-        self.id = kwargs.get('_conf', {}).get('id', self._get_new_id())  # get id from _conf for put method
+    def __init__(self, *args, path: str = None, **kwargs):
+        super().__init__(path, **kwargs)
+        self.content = None
         if '_conf' in kwargs:
             for key, value in kwargs.get('_conf', {}).items():
                 if key in self.kwargs_map:
                     setattr(self, self.kwargs_map[key], value)
-        super().__init__(path)
-        self.title = self.title if hasattr(self, 'title') else title
-        self.meta = self.meta if hasattr(self, 'meta') else None
-        self.creation_time = getattr(self, 'creation_time', creation_time or datetime.datetime.now().timestamp())
-        self.modification_time = None
+
         self.is_dir = False
         self._from_file = None
+
+        if self.exists():
+            self._load_meta()
+
 
     @classmethod
     def get_id(cls, _path: Path) -> str:

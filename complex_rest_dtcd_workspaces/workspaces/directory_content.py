@@ -1,7 +1,7 @@
-from abc import ABC, abstractmethod
 import uuid
+import datetime
 import json
-from .utils import FilesystemWorkspaceManager, _encode_name, _is_uuid4, _get_file_name, manager
+from .utils import FilesystemWorkspaceManager, _encode_name, _decode_name, _is_uuid4, _get_file_name, manager
 from typing import Dict
 from pathlib import Path
 from dtcd_workspaces.workspaces import workspacemanager_exception
@@ -9,13 +9,18 @@ from dtcd_workspaces.workspaces.workspacemanager_exception import WorkspaceManag
 from ..settings import DIR_META_NAME
 
 
-class DirectoryContent(ABC):
+class DirectoryContent:
     kwargs_map: Dict[str, str]
     manager: FilesystemWorkspaceManager = manager
     dir_metafile_name = DIR_META_NAME
 
-    def __init__(self, path: str):
-        self.path = path
+    def __init__(self, path: str, **kwargs):
+        self.path = _decode_name(path)
+        self.title = None
+        self.meta = None
+        self.creation_time = datetime.datetime.now().timestamp()
+        self.modification_time = self.creation_time
+        self.id = kwargs.get('_conf', {}).get('id', self._get_new_id())  # get id from _conf for put method
 
     @classmethod
     def is_workspace(cls, _path: Path) -> bool:
@@ -29,28 +34,25 @@ class DirectoryContent(ABC):
     def _get_new_id(cls) -> str:
         return str(uuid.uuid4())
 
-    @abstractmethod
     def _load_meta(self):
         raise NotImplementedError
 
-    @abstractmethod
-    def read(self):
-        raise NotImplementedError
-
-    @abstractmethod
-    def update(self):
-        raise NotImplementedError
-
-    @abstractmethod
-    def delete(self):
-        raise NotImplementedError
-
-    @abstractmethod
     def save(self):
         raise NotImplementedError
 
+    def create(self):
+        self.save()  # save flushes object data to permanent storage (currently file system)
+
+    def read(self):
+        raise NotImplementedError
+
+    def update(self):
+        raise NotImplementedError
+
+    def delete(self):
+        raise NotImplementedError
+
     @classmethod
-    @abstractmethod
     def get_id(cls, _path: Path):
         raise NotImplementedError
 

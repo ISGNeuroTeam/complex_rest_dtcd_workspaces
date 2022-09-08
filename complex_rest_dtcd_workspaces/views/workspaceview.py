@@ -1,4 +1,5 @@
-from dtcd_workspaces.workspaces.filesystem_workspaces import Workspace, Directory
+from dtcd_workspaces.workspaces.directory import Directory
+from dtcd_workspaces.workspaces.workspace import Workspace
 from rest.views import APIView
 from rest.response import Response, status
 from rest.permissions import IsAuthenticated
@@ -70,14 +71,14 @@ class WorkspaceView(APIView):
                 if 'dir' not in conf:
                     logger.debug(f'Create workspace with path - {workspace_path} and title - {conf.get("title")}')
                     ws = Workspace(path=workspace_path, _conf=conf)
-                    ws.save()
+                    ws.create()
                     created.append(
                         ws.id
                     )
                 else:
                     logger.debug(f'Create directory with path - {workspace_path} and title - {conf.get("title")}')
                     dr = Directory(path=workspace_path, _conf=conf)
-                    dr.save()
+                    dr.create()
                     created.append(
                         dr.id
                     )
@@ -90,7 +91,7 @@ class WorkspaceView(APIView):
                              f'and title - {conf.get("title")}')
                 return Response(str(e), status.HTTP_400_BAD_REQUEST)
         logger.debug(f'Created directories or workspaces with path - {workspace_path}')
-        return Response(workspaces, status.HTTP_200_OK)
+        return Response(created, status.HTTP_200_OK)
 
     def put(self, request, **kwargs):
         workspace_path = kwargs.get('workspace_path', '')
@@ -134,7 +135,7 @@ class WorkspaceView(APIView):
             for _id in ids:
                 try:
                     logger.debug(f'Delete workspace with path - {workspace_path} and id - {_id}')
-                    Workspace(uid=_id, path=workspace_path).delete()
+                    Workspace(path=workspace_path, _conf={'id': _id}).delete()
                 except AccessDeniedError as e:
                     logger.info(f'Access denied deleting workspace with path - {workspace_path} and id - {_id}')
                     return access_denied_response(request.user)
