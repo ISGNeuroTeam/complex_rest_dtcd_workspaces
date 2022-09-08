@@ -8,9 +8,9 @@ PROJECT_DIR = Path(__file__).parent
 PLUGIN_NAME = PROJECT_DIR.name
 
 ROLE_MODEL_AUTH_COVERED_CLASSES = [
-    "workspaces.filesystem_workspaces.AuthCoveredWorkspace",
-    "workspaces.filesystem_workspaces.AuthCoveredDirectory",
-    "workspaces.filesystem_workspaces.WorkspacesKeychain"
+    "workspaces.workspace.Workspace",
+    "workspaces.directory.Directory",
+    "models.WorkspacesKeychain"
 ]
 
 ROLE_MODEL_AUTH_COVERED_CLASSES = [

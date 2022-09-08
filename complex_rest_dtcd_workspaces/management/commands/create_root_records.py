@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
-from rest_auth.models import ProtectedResource, SecurityZone, KeyChain, User, Plugin
+from rest_auth.models import SecurityZone, User, Plugin
+from dtcd_workspaces.models import WorkspacesKeychain, ProtectedResource
 
 
 class Command(BaseCommand):
@@ -8,9 +9,9 @@ class Command(BaseCommand):
     # https://docs.djangoproject.com/en/4.0/topics/testing/tools/#topics-testing-management-commands
 
     def handle(self, *args, **options):
-        keychain_id = 'root_access_zone_keychain'
+        keychain_id = 1  # root_access_zone_keychain
 
-        if not KeyChain.objects.filter(keychain_id=keychain_id).exists():
+        if not WorkspacesKeychain.objects.filter(id=keychain_id).exists():
             # admin may be missing
             try:
                 admin = User.objects.get(username='admin')
@@ -32,7 +33,7 @@ class Command(BaseCommand):
             # TODO security zone with the given name might exist
             root_zone = SecurityZone(name='root_access')
             root_zone.save()
-            root_keychain = KeyChain(keychain_id=keychain_id, plugin=plugin, zone=root_zone)
+            root_keychain = WorkspacesKeychain(_permits='[]', _zone=root_zone.id)
             root_keychain.save()
 
             # TODO better logic for this statment?
@@ -40,12 +41,13 @@ class Command(BaseCommand):
             root_protected_resource = ProtectedResource.objects.get_or_create(
                 object_id='',
                 defaults=dict(
-                    owner=admin,
+                    owner=admin.id,
                     keychain=root_keychain,
                     name='root_workspace_directory'
                 )
             )
 
-            self.stdout.write(self.style.SUCCESS('Successfully created necessary records in rest auth'))
+            self.stdout.write(self.style.SUCCESS('Successfully created necessary records'))
         else:
-            self.stderr.write(self.style.WARNING(f'KeyChain record with id "{keychain_id}" already exists.'))
+            self.stderr.write(self.style.WARNING(f'KeyChain record with id "{keychain_id}" and necessary records '
+                                                 f'already exist. '))

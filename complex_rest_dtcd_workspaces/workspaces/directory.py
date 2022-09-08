@@ -7,6 +7,7 @@ from dtcd_workspaces.workspaces.workspace import Workspace
 from dtcd_workspaces.workspaces import workspacemanager_exception
 from dtcd_workspaces.workspaces.workspacemanager_exception import WorkspaceManagerException
 from .utils import _get_dir_path, _decode_name, _rename, _remove, _copy, _encode_name
+from rest_auth.authorization import auth_covered_method, check_authorization
 
 
 class Directory(DirectoryContent):
@@ -21,7 +22,7 @@ class Directory(DirectoryContent):
         'id': 'id'
     }
 
-    def __init__(self, *args, path: str = None, **kwargs):
+    def __init__(self, path: str = None, **kwargs):
         super().__init__(path, **kwargs)
 
         if '_conf' in kwargs:
@@ -47,7 +48,6 @@ class Directory(DirectoryContent):
 
         if self.exists():
             self._load_meta()
-
 
     def _write_directory(self):
         if not self.filesystem_path.exists():
@@ -76,7 +76,7 @@ class Directory(DirectoryContent):
 
     def save(self):
         self._write_directory()
-        # self.update_auth_record(_id=self.id, title=self.title)
+        self.update_protected_resources(_id=self.id, title=self.title)
 
     @property
     def _meta_file(self):
@@ -136,9 +136,9 @@ class Directory(DirectoryContent):
                 setattr(self, self.kwargs_map[key], value)
         if self.filesystem_path != self.manager.final_path:
             self.title = _decode_name(self.filesystem_path.name)
-        # self._load_permissions()
+        self._load_permissions()
 
-    # @check_authorization(action='workspace.read')
+    @auth_covered_method(action_name='workspace.read')
     def read(self) -> dict:  # WTF?!
         if self.title:
             self.modification_time = os.path.getmtime(self.filesystem_path)
@@ -147,7 +147,7 @@ class Directory(DirectoryContent):
             return self.as_dict()
         raise WorkspaceManagerException(workspacemanager_exception.NO_DIR, self.filesystem_path)
 
-    # @check_authorization(action='workspace.read')
+    @auth_covered_method(action_name='workspace.read')
     def list(self) -> Dict[str, List]:
         """List directory content allowed to read by user"""
         directories, workspaces = [], []
@@ -160,7 +160,7 @@ class Directory(DirectoryContent):
                 directories.append(item.as_dict())
         return {'workspaces': workspaces, 'directories': directories, 'current_directory': self.read()}
 
-    # @check_authorization(action='workspace.update')
+    @auth_covered_method(action_name='workspace.update')
     def update(self, *args, _conf: dict = None):
         """Rename or move directory"""
         if 'new_path' in _conf:
@@ -175,7 +175,7 @@ class Directory(DirectoryContent):
     def _update_title(self, new_title: str):
         self._rename(new_title)
         # Call auth parent class to update its record if it has changed
-        # self.update_auth_record(_id=self.id, title=new_title)
+        self.update_protected_resources(_id=self.id, title=new_title)
         self.title = new_title
         self.path = str(Path(self.path).parent / new_title)  # update path according to new_title
 
@@ -200,16 +200,16 @@ class Directory(DirectoryContent):
 
     def _move(self, path: str):
         target = self.get_target_directory_content(path)
-
+        check_authorization(target, 'workspace.update')
         # Check if we allowed to move all the content
-        # for item in self._recursive_iterdir():
-        #     item.can_update()  # Will raise an error if not
+        for item in self._recursive_iterdir():
+            check_authorization(item, 'workspace.update')  # Will raise an error if not
 
         _copy(self.filesystem_path, target.filesystem_path)
         self._delete_directory()
         self.path = str(Path(path) / self.title)
 
-    # @check_authorization(action='workspace.delete')
+    @auth_covered_method(action_name='workspace.delete')
     def delete(self):
         if not self.filesystem_path.exists():
             raise WorkspaceManagerException(workspacemanager_exception.NO_DIR, self.filesystem_path)
@@ -217,9 +217,9 @@ class Directory(DirectoryContent):
             raise WorkspaceManagerException(workspacemanager_exception.DELETING_ROOT, self.filesystem_path)
 
         # Check if we allowed to delete all the content and gather auth_records ids to be deleted
-        auth_record_ids = [self.id]
-        # for item in self._recursive_iterdir():
-        #     auth_record_ids.append(item.id)
-        #     item.can_delete()  # Will raise an error if not -> has_perm
+        protected_resource_ids = [self.id]
+        for item in self._recursive_iterdir():
+            protected_resource_ids.append(item.id)
+            check_authorization(item, action_name='workspace.delete')  # Will raise an error if not -> has_perm
         self._delete_directory()
-        # self.delete_auth_record(ids=auth_record_ids)
+        self.delete_protected_resources(ids=protected_resource_ids)

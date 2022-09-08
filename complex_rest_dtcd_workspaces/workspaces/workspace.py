@@ -6,6 +6,7 @@ from dtcd_workspaces.workspaces.directory_content import DirectoryContent
 from dtcd_workspaces.workspaces import workspacemanager_exception
 from dtcd_workspaces.workspaces.workspacemanager_exception import WorkspaceManagerException
 from .utils import _remove, _copy
+from rest_auth.authorization import auth_covered_method, check_authorization
 
 
 class Workspace(DirectoryContent):
@@ -20,9 +21,10 @@ class Workspace(DirectoryContent):
         'content': 'content',
     }
 
-    def __init__(self, *args, path: str = None, **kwargs):
+    def __init__(self, path: str = None, **kwargs):
         super().__init__(path, **kwargs)
         self.content = None
+
         if '_conf' in kwargs:
             for key, value in kwargs.get('_conf', {}).items():
                 if key in self.kwargs_map:
@@ -33,7 +35,6 @@ class Workspace(DirectoryContent):
 
         if self.exists():
             self._load_meta()
-
 
     @classmethod
     def get_id(cls, _path: Path) -> str:
@@ -46,7 +47,7 @@ class Workspace(DirectoryContent):
         return self._from_file
 
     def _load_meta(self):
-        # self._load_permissions()
+        self._load_permissions()
         if self.content is None:  # content was not loaded
             self.creation_time = self._workspace_data.get('creation_time')
             self.title = self._workspace_data.get('title')
@@ -79,18 +80,18 @@ class Workspace(DirectoryContent):
 
     def save(self):
         self._save_to_file()
-        # self.update_auth_record(_id=self.id, title=self.title)
+        self.update_protected_resources(_id=self.id, title=self.title)
 
     @property
     def filesystem_path(self):
         return self.manager.get_filesystem_path(self.path) / Path(self.id).with_suffix('.json')
 
-    # @check_authorization(action='workspace.read')
+    @auth_covered_method(action_name='workspace.read')
     def read(self) -> dict:
         self._load_content()
         return self.as_dict()
 
-    # @check_authorization(action='workspace.update')
+    @auth_covered_method(action_name='workspace.update')
     def update(self, *args, _conf: dict = None):
 
         if not self.filesystem_path.exists():
@@ -104,9 +105,7 @@ class Workspace(DirectoryContent):
 
     def _move(self, path: str):
         target = self.get_target_directory_content(path)
-
-        # self.can_update()
-
+        check_authorization(target, 'workspace.update')
         _copy(self.filesystem_path, target.filesystem_path)
         self._delete_from_file()
         self.path = path
@@ -122,9 +121,9 @@ class Workspace(DirectoryContent):
         self._from_file = None  # cached values should be purged, because of update on file system
         self.save()
 
-    # @check_authorization(action='workspace.delete')
+    @auth_covered_method(action_name='workspace.delete')
     def delete(self):
         if not self.filesystem_path.exists():
             raise WorkspaceManagerException(workspacemanager_exception.NO_WORKSPACE, self.filesystem_path)
         self._delete_from_file()
-        # self.delete_auth_record(ids=[self.id])
+        self.delete_protected_resources(ids=[self.id])

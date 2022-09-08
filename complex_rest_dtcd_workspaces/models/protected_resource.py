@@ -1,6 +1,6 @@
 from django.db import models
 from mixins.models import NamedModel
-from dtcd_workspaces.models.models import WorkspacesKeychain
+from dtcd_workspaces.models import WorkspacesKeychain
 
 
 class ProtectedResource(NamedModel):
