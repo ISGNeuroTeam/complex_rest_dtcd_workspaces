@@ -28,4 +28,5 @@ sudo -u postgres psql -h localhost -p 5433 << EOF
 grant all privileges on database dtcd_workspaces to dtcd_workspaces;
 EOF
 
+$python complex_rest/manage.py migrate dtcd_workspaces --database=dtcd_workspaces
 $python complex_rest/manage.py create_root_records

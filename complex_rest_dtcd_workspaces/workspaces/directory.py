@@ -1,4 +1,3 @@
-import json
 import os.path
 from pathlib import Path
 from typing import List, Dict, Iterable
@@ -8,6 +7,7 @@ from dtcd_workspaces.workspaces import workspacemanager_exception
 from dtcd_workspaces.workspaces.workspacemanager_exception import WorkspaceManagerException
 from .utils import _get_dir_path, _decode_name, _rename, _remove, _copy, _encode_name
 from rest_auth.authorization import auth_covered_method, check_authorization
+from rest_auth.exceptions import AccessDeniedError
 
 
 class Directory(DirectoryContent):
@@ -86,27 +86,6 @@ class Directory(DirectoryContent):
     def filesystem_path(self):
         return self.manager.get_filesystem_path(self.path)
 
-    @classmethod
-    def read_dir_meta(cls, dir_path: Path) -> dict:
-        """Read specific directory metadata"""
-        meta_path = dir_path / cls.dir_metafile_name
-        if meta_path.exists():
-            with open(meta_path) as meta_file:
-                meta_info = json.load(meta_file)
-                return {
-                    "id": meta_info.get("id"),
-                    'title': meta_info.get("title"),
-                    'creation_time': meta_info.get("creation_time"),
-                    'meta': meta_info.get("meta"),
-                    'modification_time': os.path.getmtime(dir_path)
-                }
-        return {}
-
-    @classmethod
-    def get_id(cls, _path: Path):
-        meta = cls.read_dir_meta(_path)
-        return meta.get('id')
-
     def _iterdir(self) -> Iterable[DirectoryContent]:
         for item in self.filesystem_path.iterdir():
             retrieved = self._retrieve_directory_content(item)
@@ -152,12 +131,15 @@ class Directory(DirectoryContent):
         """List directory content allowed to read by user"""
         directories, workspaces = [], []
         for item in self._iterdir():
-            # if item.can_read_no_except():
-            item.modification_time = os.path.getmtime(item.filesystem_path)
-            if isinstance(item, Workspace):
-                workspaces.append(item.as_dict())
-            elif isinstance(item, Directory):
-                directories.append(item.as_dict())
+            try:
+                check_authorization(item, 'workspace.read')
+                item.modification_time = os.path.getmtime(item.filesystem_path)
+                if isinstance(item, Workspace):
+                    workspaces.append(item.as_dict())
+                elif isinstance(item, Directory):
+                    directories.append(item.as_dict())
+            except AccessDeniedError:
+                pass
         return {'workspaces': workspaces, 'directories': directories, 'current_directory': self.read()}
 
     @auth_covered_method(action_name='workspace.update')
@@ -220,6 +202,6 @@ class Directory(DirectoryContent):
         protected_resource_ids = [self.id]
         for item in self._recursive_iterdir():
             protected_resource_ids.append(item.id)
-            check_authorization(item, action_name='workspace.delete')  # Will raise an error if not -> has_perm
+            check_authorization(item, action_name='workspace.delete')
         self._delete_directory()
         self.delete_protected_resources(ids=protected_resource_ids)

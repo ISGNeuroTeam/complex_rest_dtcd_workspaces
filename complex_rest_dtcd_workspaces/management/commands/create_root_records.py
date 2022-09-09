@@ -33,7 +33,7 @@ class Command(BaseCommand):
             # TODO security zone with the given name might exist
             root_zone = SecurityZone(name='root_access')
             root_zone.save()
-            root_keychain = WorkspacesKeychain(_permits='[]', _zone=root_zone.id)
+            root_keychain = WorkspacesKeychain(_permits='1', _zone=root_zone.id)
             root_keychain.save()
 
             # TODO better logic for this statment?

@@ -52,7 +52,7 @@ class WorkspaceView(APIView):
         _id = qs['id'][0]
         try:
             logger.debug(f'Get workspace info with path - {workspace_path} and id - {_id}')
-            workspace = Workspace(uid=_id, path=workspace_path).read()
+            workspace = Workspace(_conf={'id': _id}, path=workspace_path).read()
         except AccessDeniedError as e:
             logger.info(f'Access denied to get workspace with path - {workspace_path} and id - {_id}')
             return access_denied_response(request.user)

@@ -1,4 +1,5 @@
 import uuid
+import os
 import datetime
 import json
 from .utils import FilesystemWorkspaceManager, _encode_name, _decode_name, _is_uuid4, _get_file_name, manager
@@ -85,7 +86,24 @@ class DirectoryContent(IAuthCovered):
 
     @classmethod
     def get_id(cls, _path: Path):
-        raise NotImplementedError
+        meta = cls.read_dir_meta(_path)
+        return meta.get('id')
+
+    @classmethod
+    def read_dir_meta(cls, dir_path: Path) -> dict:
+        """Read specific directory metadata"""
+        meta_path = dir_path / cls.dir_metafile_name
+        if meta_path.exists():
+            with open(meta_path) as meta_file:
+                meta_info = json.load(meta_file)
+                return {
+                    "id": meta_info.get("id"),
+                    'title': meta_info.get("title"),
+                    'creation_time': meta_info.get("creation_time"),
+                    'meta': meta_info.get("meta"),
+                    'modification_time': os.path.getmtime(dir_path)
+                }
+        return {}
 
     @property
     def filesystem_path(self):
@@ -150,9 +168,7 @@ class DirectoryContent(IAuthCovered):
         ids = []
         # If object is a file i.e. workspace, then get its id and go for directories
         if self.is_workspace(from_path):
-            file_name = _get_file_name(from_path)
-            if _is_uuid4(file_name):
-                ids.append(file_name)
+            ids.append(self.get_id(from_path))
             from_path = from_path.parent
 
         # Iterate through dirs and get ids
