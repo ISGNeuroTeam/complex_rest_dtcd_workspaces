@@ -10,13 +10,13 @@ from dtcd_workspaces.workspaces.workspace import Workspace
 from dtcd_workspaces.workspaces.directory import Directory
 from dtcd_workspaces.management.commands.create_root_records import Command
 from rest_auth.models import User, Plugin, Action
+from settings import WORKSPACE_BASE_PATH, WORKSPACE_TMP_PATH, DIR_META_NAME
 
 
 class TestWorkspaceDirs(TransactionTestCase):
-    tests_path = Path(__file__).parent
-    tmp_path = tests_path / 'tmp'
-    base_path = tests_path / 'root_workspace_directory'
-    meta_name = '.DIR_INFO'
+    tmp_path = Path(WORKSPACE_TMP_PATH)
+    base_path = Path(WORKSPACE_BASE_PATH)
+    meta_name = DIR_META_NAME
 
     def _create_root_dir_object(self):
         self.root_dir = Directory(path='')
@@ -658,6 +658,79 @@ class TestWorkspaceDirs(TransactionTestCase):
         except WorkspaceManagerException:
             self.assertTrue(True)
 
+    def test_update_workspace_meta(self):
+        title = 'ws'
+        content = 'dark secrets'
+        meta = {'color': 'TRANSPARENT'}
+        new_meta = {'color': 'TEAL'}
+        ws = Workspace(path='', _conf={"title": title, "content": content, "meta": meta})
+        ws.create()
+        color = ws.read().get("meta", {}).get("color")
+        ws.update(_conf={"meta": new_meta})
+        new_color = ws.read().get("meta", {}).get("color")
+        self.assertNotEqual(color, new_color)
+
+    def test_update_directory_meta(self):
+        dir_title = 'in_root_dir'
+        meta = {'color': 'TRANSPARENT'}
+        new_meta = {'color': 'TEAL'}
+        dr = Directory(path='', _conf={"title": dir_title, "meta": meta})
+        dr.create()
+        color = dr.read().get("meta", {}).get("color")
+        dr.update(_conf={"new_meta": new_meta})
+        new_color = dr.read().get("meta", {}).get("color")
+        self.assertNotEqual(color, new_color)
+
+    def test_get_owner_workspace(self):
+        dir_title = 'in_root_dir'
+        title = 'ws'
+        content = 'dark secrets'
+        dr = Directory(path='', _conf={"title": dir_title})
+        dr.create()
+        ws = Workspace(path=utils._encode_name(dir_title), _conf={"title": title, "content": content})
+        ws.create()
+        self.assertEqual(ws.owner, User.objects.get(username='admin'))
+
+    def test_get_owner_directory(self):
+        parent_dir_title = 'in_root_dir'
+        dir_title = 'next_dir'
+        parent_dr = Directory(path='', _conf={"title": parent_dir_title})
+        parent_dr.create()
+        dr = Directory(path=utils._encode_name(parent_dir_title), _conf={"title": dir_title})
+        dr.create()
+        self.assertEqual(dr.owner, User.objects.get(username='admin'))
+
+    def test_set_owner_workspace(self):
+        pass
+
+    def test_set_owner_directory(self):
+        pass
+
+    def test_get_keychain_workspace(self):
+        dir_title = 'in_root_dir'
+        title = 'ws'
+        content = 'dark secrets'
+        dr = Directory(path='', _conf={"title": dir_title})
+        dr.create()
+        ws = Workspace(path=utils._encode_name(dir_title), _conf={"title": title, "content": content})
+        ws.create()
+        self.assertTrue(dr.keychain.id == 12 or dr.keychain.id == 13)
+
+    def test_get_keychain_directory(self):
+        parent_dir_title = 'in_root_dir'
+        dir_title = 'next_dir'
+        parent_dr = Directory(path='', _conf={"title": parent_dir_title})
+        parent_dr.create()
+        dr = Directory(path=utils._encode_name(parent_dir_title), _conf={"title": dir_title})
+        dr.create()
+        self.assertTrue(dr.keychain.id == 12 or dr.keychain.id == 13)
+
+    def test_set_keychain_workspace(self):
+        pass
+
+    def test_set_keychain_directory(self):
+        pass
+
     def tearDown(self) -> None:
-        rmtree(self.tmp_path, ignore_errors=True)
-        rmtree(self.base_path, ignore_errors=True)
+        rmtree(self.tmp_path, ignore_errors=False)
+        rmtree(self.base_path, ignore_errors=False)
