@@ -7,7 +7,7 @@ PROJECT_DIR = Path(__file__)
 while PROJECT_DIR.name != 'complex_rest':
     PROJECT_DIR = PROJECT_DIR.parent
 
-PROJECT_DIR = PROJECT_DIR / 'plugin_dev' / 'complex_rest_dtcd_workspaces' / 'tests'
+PROJECT_DIR = PROJECT_DIR / 'plugin_dev' / 'dtcd_workspaces' / 'tests'
 
 ROLE_MODEL_ACTIONS = {
     'workspace.create': {
