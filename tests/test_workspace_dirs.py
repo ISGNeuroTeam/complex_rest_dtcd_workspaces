@@ -6,6 +6,7 @@ from shutil import rmtree
 from rest.test import TransactionTestCase
 from dtcd_workspaces.workspaces.workspacemanager_exception import WorkspaceManagerException
 from dtcd_workspaces.workspaces import utils
+from dtcd_workspaces.models import ProtectedResource, WorkspacesKeychain
 from dtcd_workspaces.workspaces.workspace import Workspace
 from dtcd_workspaces.workspaces.directory import Directory
 from dtcd_workspaces.management.commands.create_root_records import Command
@@ -701,10 +702,31 @@ class TestWorkspaceDirs(TransactionTestCase):
         self.assertEqual(dr.owner, User.objects.get(username='admin'))
 
     def test_set_owner_workspace(self):
-        pass
+        dir_title = 'in_root_dir'
+        title = 'ws'
+        content = 'dark secrets'
+        dr = Directory(path='', _conf={"title": dir_title})
+        dr.create()
+        ws = Workspace(path=utils._encode_name(dir_title), _conf={"title": title, "content": content})
+        ws.create()
+        self.assertEqual(ws.owner, User.objects.get(username='admin'))
+        ladybug = User(username='ladybug', password='supercat')
+        ladybug.save()
+        ws.owner = ladybug
+        self.assertEqual(ws.owner, User.objects.get(username='ladybug'))
 
     def test_set_owner_directory(self):
-        pass
+        parent_dir_title = 'in_root_dir'
+        dir_title = 'next_dir'
+        parent_dr = Directory(path='', _conf={"title": parent_dir_title})
+        parent_dr.create()
+        dr = Directory(path=utils._encode_name(parent_dir_title), _conf={"title": dir_title})
+        dr.create()
+        self.assertEqual(dr.owner, User.objects.get(username='admin'))
+        ladybug = User(username='ladybug', password='supercat')
+        ladybug.save()
+        dr.owner = ladybug
+        self.assertEqual(dr.owner, User.objects.get(username='ladybug'))
 
     def test_get_keychain_workspace(self):
         dir_title = 'in_root_dir'
@@ -714,7 +736,7 @@ class TestWorkspaceDirs(TransactionTestCase):
         dr.create()
         ws = Workspace(path=utils._encode_name(dir_title), _conf={"title": title, "content": content})
         ws.create()
-        self.assertTrue(dr.keychain.id == 12 or dr.keychain.id == 13)
+        self.assertEqual(ws.keychain.id, ProtectedResource.objects.get(name='root_workspace_directory').keychain.id)
 
     def test_get_keychain_directory(self):
         parent_dir_title = 'in_root_dir'
@@ -723,13 +745,34 @@ class TestWorkspaceDirs(TransactionTestCase):
         parent_dr.create()
         dr = Directory(path=utils._encode_name(parent_dir_title), _conf={"title": dir_title})
         dr.create()
-        self.assertTrue(dr.keychain.id == 12 or dr.keychain.id == 13)
+        self.assertEqual(dr.keychain.id, ProtectedResource.objects.get(name='root_workspace_directory').keychain.id)
 
     def test_set_keychain_workspace(self):
-        pass
+        dir_title = 'in_root_dir'
+        title = 'ws'
+        content = 'dark secrets'
+        dr = Directory(path='', _conf={"title": dir_title})
+        dr.create()
+        ws = Workspace(path=utils._encode_name(dir_title), _conf={"title": title, "content": content})
+        ws.create()
+        self.assertEqual(ws.keychain.id, ProtectedResource.objects.get(name='root_workspace_directory').keychain.id)
+        keychain = WorkspacesKeychain()
+        keychain.save()
+        ws.keychain = keychain
+        self.assertEqual(ws.keychain.id, keychain.id)
 
     def test_set_keychain_directory(self):
-        pass
+        parent_dir_title = 'in_root_dir'
+        dir_title = 'next_dir'
+        parent_dr = Directory(path='', _conf={"title": parent_dir_title})
+        parent_dr.create()
+        dr = Directory(path=utils._encode_name(parent_dir_title), _conf={"title": dir_title})
+        dr.create()
+        self.assertEqual(dr.keychain.id, ProtectedResource.objects.get(name='root_workspace_directory').keychain.id)
+        keychain = WorkspacesKeychain()
+        keychain.save()
+        dr.keychain = keychain
+        self.assertEqual(dr.keychain.id, keychain.id)
 
     def tearDown(self) -> None:
         rmtree(self.tmp_path, ignore_errors=False)
