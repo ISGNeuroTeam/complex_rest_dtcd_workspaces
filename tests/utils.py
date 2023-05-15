@@ -1,5 +1,5 @@
-from complex_rest_dtcd_workspaces.workspaces.filesystem_workspaces import Workspace, Directory, WorkspaceManagerException
-from complex_rest_dtcd_workspaces.workspaces import utils, workspacemanager_exception
+from dtcd_workspaces.workspaces.filesystem_workspaces import Workspace, Directory, WorkspaceManagerException
+from dtcd_workspaces.workspaces import utils, workspacemanager_exception
 from rest_auth.authorization import check_authorization
 from typing import List, Dict, Union
 from pathlib import Path

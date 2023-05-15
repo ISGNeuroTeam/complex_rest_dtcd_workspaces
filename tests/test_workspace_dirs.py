@@ -4,9 +4,9 @@ import time
 import os
 from shutil import rmtree
 from rest.test import TransactionTestCase
-from complex_rest_dtcd_workspaces.workspaces.filesystem_workspaces import WorkspaceManagerException
-from complex_rest_dtcd_workspaces.workspaces import utils
-from complex_rest_dtcd_workspaces.management.commands.create_root_records import Command
+from dtcd_workspaces.workspaces.filesystem_workspaces import WorkspaceManagerException
+from dtcd_workspaces.workspaces import utils
+from dtcd_workspaces.management.commands.create_root_records import Command
 from rest_auth.models import User, Plugin, Action
 from .utils import TWorkspace, TDirectory
 
