@@ -3,7 +3,8 @@ SHELL = /bin/bash
 
 plugin_name := complex_rest_dtcd_workspaces
 build_dir := make_build
-plugin_dir := $(build_dir)/$(plugin_name)
+plugin_dir := dtcd_workspaces
+plugin_build_dir := $(build_dir)/dtcd_workspaces
 requirements_file := requirements.txt
 
 
@@ -26,32 +27,32 @@ pack: make_build
 	$(SET_VERSION)
 	$(SET_BRANCH)
 	rm -f $(plugin_name)-*.tar.gz
-	cd $(build_dir); tar czf ../$(plugin_name)-$(VERSION)-$(BRANCH).tar.gz $(plugin_name) --transform "s/^complex_rest_//"
+	cd $(build_dir); tar czf ../$(plugin_name)-$(VERSION)-$(BRANCH).tar.gz $(plugin_dir) --transform "s/^complex_rest_//"
 
 clean_pack: clean_build
 	rm -f $(plugin_name)-*.tar.gz
 
 complex_rest_dtcd_workspaces.tar.gz: build
-	cd $(build_dir); tar czf ../$(plugin_name).tar.gz $(plugin_name) --transform "s/^complex_rest_//" && rm -rf ../$(build_dir)
+	cd $(build_dir); tar czf ../$(plugin_name).tar.gz $(plugin_dir) --transform "s/^complex_rest_//" && rm -rf ../$(build_dir)
 
 build: make_build
 
 make_build: venv.tar.gz
 	mkdir $(build_dir)
-	cp -r $(plugin_name) $(build_dir)
+	cp -r $(plugin_dir) $(build_dir)
 
 	# copy configuration files
-	cp docs/dtcd_workspaces.conf.example $(plugin_dir)/dtcd_workspaces.conf.example
+	cp docs/dtcd_workspaces.conf.example $(plugin_build_dir)/dtcd_workspaces.conf.example
 
-	cp *.md $(plugin_dir)
-	cp *.py $(plugin_dir)
+	cp *.md $(plugin_build_dir)
+	cp *.py $(plugin_build_dir)
 #	scripts
-	cp -u docs/scripts/*.sh $(plugin_dir)
-	chmod 755 $(plugin_dir)/*.sh
+	cp -u docs/scripts/*.sh $(plugin_build_dir)
+	chmod 755 $(plugin_build_dir)/*.sh
 
 	# virtual environment
-	mkdir $(plugin_dir)/venv
-	tar -xzf ./venv.tar.gz -C $(plugin_dir)/venv
+	mkdir $(plugin_build_dir)/venv
+	tar -xzf ./venv.tar.gz -C $(plugin_build_dir)/venv
 
 clean_build: clean_venv
 	rm -rf $(build_dir)
