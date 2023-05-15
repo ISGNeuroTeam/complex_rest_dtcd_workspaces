@@ -41,7 +41,7 @@ make_build: venv.tar.gz
 	cp -r $(plugin_name) $(build_dir)
 
 	# copy configuration files
-	cp docs/dtcd_workspaces.conf.example $(plugin_dir)/dtcd_workspaces.conf
+	cp docs/dtcd_workspaces.conf.example $(plugin_dir)/dtcd_workspaces.conf.example
 
 	cp *.md $(plugin_dir)
 	cp *.py $(plugin_dir)
