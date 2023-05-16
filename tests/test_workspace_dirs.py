@@ -7,14 +7,15 @@ from rest.test import TransactionTestCase
 from dtcd_workspaces.workspaces.filesystem_workspaces import WorkspaceManagerException
 from dtcd_workspaces.workspaces import utils
 from dtcd_workspaces.management.commands.create_root_records import Command
+from dtcd_workspaces.settings import WORKSPACE_BASE_PATH, WORKSPACE_TMP_PATH
 from rest_auth.models import User, Plugin, Action
 from .utils import TWorkspace, TDirectory
 
 
 class TestWorkspaceDirs(TransactionTestCase):
     tests_path = Path(__file__).parent
-    tmp_path = tests_path / 'tmp'
-    base_path = tests_path / 'root_workspace_directory'
+    tmp_path = Path(WORKSPACE_TMP_PATH)
+    base_path = Path(WORKSPACE_BASE_PATH)
     meta_name = '.DIR_INFO'
 
     def _create_root_dir_object(self):

@@ -11,10 +11,10 @@ class DtcdWorkspacesConfig(AppConfig):
 
     @staticmethod
     def _show_plugin_version():
+        from logging import getLogger
+        plugin_log = getLogger('dtcd_workspaces')
         try:
             from dtcd_workspaces.setup import __version__
-            from logging import getLogger
-            plugin_log = getLogger('dtcd_workspaces')
             plugin_log.warning(f'dtcd_workspaces plugin version is {__version__}')
         except ImportError:
-            log.info(f'No setup.py file with __version__.')
+            plugin_log.info(f'No setup.py file with __version__.')

@@ -31,10 +31,19 @@ default_ini_config = {
     },
     'workspace': {},
 }
+# try to read path to config from environment
+conf_path_env = os.environ.get('dtcd_workspaces_conf', None)
+
+if conf_path_env is None:
+    conf_path = PROJECT_DIR / 'dtcd_workspaces.conf'
+else:
+    conf_path = Path(conf_path_env).resolve()
 
 # main config
 config_parser = configparser.ConfigParser()
-config_parser.read(PROJECT_DIR / 'dtcd_workspaces.conf')
+
+config_parser.read(conf_path)
+
 # FIXME option false in config gets converted from 'false' to True
 ini_config = merge_ini_config_with_defaults(config_parser, default_ini_config)
 

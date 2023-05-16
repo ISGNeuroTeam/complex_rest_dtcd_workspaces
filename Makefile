@@ -23,6 +23,12 @@ GENERATE_BRANCH = $(shell git name-rev $$(git rev-parse HEAD) | cut -d\  -f2 | c
 SET_VERSION = $(eval VERSION=$(GENERATE_VERSION))
 SET_BRANCH = $(eval BRANCH=$(GENERATE_BRANCH))
 
+define clean_docker_containers
+	@echo "Stopping and removing docker containers"
+	docker-compose -f docker-compose-test.yml stop
+	if [[ $$(docker ps -aq -f name=dtcd_workspaces) ]]; then docker rm $$(docker ps -aq -f name=dtcd_workspaces);  fi;
+endef
+
 pack: make_build
 	$(SET_VERSION)
 	$(SET_BRANCH)
@@ -69,24 +75,21 @@ clean_venv:
 	rm -rf venv
 	rm -f ./venv.tar.gz
 
-complex_rest:
-	@echo "Should clone complex_rest repository in future..."
-# 	git clone git@github.com:ISGNeuroTeam/complex_rest.git
-# 	{ cd ./complex_rest; git checkout develop; make venv; make redis; }
-# 	ln -s ../../../../dtcd_workspaces/dtcd_workspaces ./complex_rest/complex_rest/plugins/dtcd_workspaces
+clean: clean_build clean_venv clean_pack clean_test
 
-clean_complex_rest:
-ifneq (,$(wildcard ./complex_rest))
-	{ cd ./complex_rest; make clean;}
-	rm -f ./complex_rest/plugins/dtcd_workspaces
-	rm -rf ./complex_rest
-endif
+test: docker_test
 
-clean: clean_build clean_venv clean_pack clean_test clean_complex_rest
+logs:
+	mkdir -p ./logs
 
-test: venv complex_rest
+docker_test: logs
+	$(call clean_docker_containers)
 	@echo "Testing..."
-# 	./complex_rest/venv/bin/python ./complex_rest/complex_rest/manage.py test ./tests --settings=core.settings.test
+	CURRENT_UID=$$(id -u):$$(id -g) docker-compose -f docker-compose-test.yml run --rm  complex_rest python ./complex_rest/manage.py test ./tests --settings=core.settings.test --no-input
+	$(call clean_docker_containers)
 
-clean_test: clean_complex_rest
+clean_docker_test:
+	$(call clean_docker_containers)
+
+clean_test: clean_docker_test
 	@echo "Clean tests"
