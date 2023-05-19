@@ -9,77 +9,60 @@ from typing import List, Dict, Union, Iterable, Optional
 from dtcd_workspaces.workspaces import workspacemanager_exception
 from dtcd_workspaces.workspaces.workspacemanager_exception import WorkspaceManagerException
 from rest_auth.authentication import User
-from rest_auth.authorization import BaseProtectedResource, check_authorization
-from rest_auth.models import ProtectedResource
+from rest_auth.authorization import IAuthCovered, auth_covered_method, AccessDeniedError, check_authorization
 from .utils import manager, _get_dir_path, _is_uuid4, _decode_name, _rename, _remove, _copy, _get_file_name, _encode_name
 from ..settings import DIR_META_NAME, ROLE_MODEL_ACTIONS
 
 
-class AuthCovered(BaseProtectedResource):
+class AuthCovered:
     """Provides interaction with Role Model"""
 
-    def __init__(self, *args, ids_chain: List[str] = None):
-        resources = {obj.object_id: obj for obj in ProtectedResource.objects.filter(object_id__in=ids_chain)}
-        res: Optional[ProtectedResource] = None
-        for _id in ids_chain:
-            res = resources.get(_id)
-            if res:
-                break
-        if res:
-            super().__init__(keychain_id=res.keychain.pk, owner_id=res.owner.pk)
+    def __init__(self, *args):
         self.permissions = None
 
-    @check_authorization(action='workspace.create')
+    @auth_covered_method(action_name='workspace.create')
     def can_create(self):
         return True
 
-    @check_authorization(action='workspace.read')
+    @auth_covered_method(action_name='workspace.read')
     def can_read(self):
         return True
 
-    @check_authorization(action='workspace.update')
+    @auth_covered_method(action_name='workspace.update')
     def can_update(self):
         return True
 
-    @check_authorization(action='workspace.delete')
+    @auth_covered_method(action_name='workspace.delete')
     def can_delete(self):
         return True
 
-    @check_authorization(action='workspace.create', when_denied=False)
     def can_create_no_except(self):
-        return True
-
-    @check_authorization(action='workspace.read', when_denied=False)
-    def can_read_no_except(self):
-        return True
-
-    @check_authorization(action='workspace.update', when_denied=False)
-    def can_update_no_except(self):
-        return True
-
-    @check_authorization(action='workspace.delete', when_denied=False)
-    def can_delete_no_except(self):
-        return True
-
-    def accessed_by(self, user: User):
-        self.user = user
-        return self
-
-    def create_auth_record(self, *args, _id: str = None, title: str = None, owner: str = None, keychain: str = None):
-        res = ProtectedResource(object_id=_id, title=title, owner=owner, keychain=keychain)
-        res.save()
-
-    def update_auth_record(self, *args, _id: str = None, title: str = None):
         try:
-            res: ProtectedResource = ProtectedResource.objects.get(object_id=_id)
-            res.name = title
-            res.save()
-        except ProtectedResource.DoesNotExist as e:
-            pass
+            check_authorization(self, 'workspace.create')
+        except AccessDeniedError:
+            return False
+        return True
 
-    def delete_auth_record(self, *args, ids: List[str] = tuple()):
-        resources = ProtectedResource.objects.filter(object_id__in=ids)
-        resources.delete()
+    def can_read_no_except(self):
+        try:
+            check_authorization(self, 'workspace.read')
+        except AccessDeniedError:
+            return False
+        return True
+
+    def can_update_no_except(self):
+        try:
+            check_authorization(self, 'workspace.update')
+        except AccessDeniedError:
+            return False
+        return True
+
+    def can_delete_no_except(self):
+        try:
+            check_authorization(self, 'workspace.delete')
+        except AccessDeniedError:
+            return False
+        return True
 
     def _load_permissions(self):
         if hasattr(self, 'user') and self.user:
@@ -177,7 +160,7 @@ class BaseWorkspace(abc.ABC):
         return target
 
 
-class Workspace(BaseWorkspace, AuthCovered):
+class Workspace(BaseWorkspace, AuthCovered, IAuthCovered):
     kwargs_map = dict(**BaseWorkspace.kwargs_map, content='content')
 
     def __init__(self, *args, uid: str = None, path: str = None, title: str = None, creation_time: float = None,
@@ -188,7 +171,6 @@ class Workspace(BaseWorkspace, AuthCovered):
                                creation_time=creation_time, modification_time=modification_time,
                                **kwargs)
         self.id = self.id or self._get_new_id()
-        AuthCovered.__init__(self, ids_chain=self.get_ids_chain(self.filesystem_path))
         self.plugin = self.get_plugin_name(__file__)
         self._from_file = None
 
@@ -239,18 +221,17 @@ class Workspace(BaseWorkspace, AuthCovered):
 
     def save(self):
         self._save_to_file()
-        self.update_auth_record(_id=self.id, title=self.title)
 
     @property
     def filesystem_path(self):
         return self.manager.get_filesystem_path(self.path) / Path(self.id).with_suffix('.json')
 
-    @check_authorization(action='workspace.read')
+    @auth_covered_method(action_name='workspace.read')
     def read(self) -> dict:
         self._load_content()
         return self.as_dict()
 
-    @check_authorization(action='workspace.update')
+    @auth_covered_method(action_name='workspace.update')
     def update(self, *args, _conf: dict = None):
 
         if not self.filesystem_path.exists():
@@ -282,7 +263,7 @@ class Workspace(BaseWorkspace, AuthCovered):
         self._from_file = None  # cached values should be purged, because of update on file system
         self.save()
 
-    @check_authorization(action='workspace.delete')
+    @auth_covered_method(action_name='workspace.delete')
     def delete(self):
         if not self.filesystem_path.exists():
             raise WorkspaceManagerException(workspacemanager_exception.NO_WORKSPACE, self.filesystem_path)
@@ -424,7 +405,7 @@ class Directory(BaseWorkspace, AuthCovered):
     def as_json(self):
         return json.dumps(self.as_dict())
 
-    @check_authorization(action='workspace.read')
+    @auth_covered_method(action_name='workspace.read')
     def read(self) -> dict:
         if self.title:
             self.modification_time = os.path.getmtime(self.filesystem_path)
@@ -433,7 +414,7 @@ class Directory(BaseWorkspace, AuthCovered):
             return self.as_dict()
         raise WorkspaceManagerException(workspacemanager_exception.NO_DIR, self.filesystem_path)
 
-    @check_authorization(action='workspace.read')
+    @auth_covered_method(action_name='workspace.read')
     def list(self) -> Dict[str, List]:
         """List directory content allowed to read by user"""
         directories, workspaces = [], []
@@ -448,21 +429,21 @@ class Directory(BaseWorkspace, AuthCovered):
         current_dir = self.read()
         return {'workspaces': workspaces, 'directories': directories, 'current_directory': current_dir}
 
-    @check_authorization(action='workspace.create')
+    @auth_covered_method(action_name='workspace.create')
     def create_workspace(self, *args, workspace_conf: dict = None) -> str:
         """Create workspace, write data on drive and return id"""
         workspace = Workspace(_conf=workspace_conf, path=_encode_name(self.path))
         workspace.save()
         return workspace.id
 
-    @check_authorization(action='workspace.create')
+    @auth_covered_method(action_name='workspace.create')
     def create_dir(self, *args, _conf: dict = None) -> str:
         """Create directory, write data on drive and return id"""
         directory = Directory(_conf=_conf, path=self.path)
         directory.save()
         return directory.id
 
-    @check_authorization(action='workspace.update')
+    @auth_covered_method(action_name='workspace.update')
     def update(self, *args, _conf: dict = None):
         """Rename or move directory"""
         if 'new_path' in _conf:
@@ -509,7 +490,7 @@ class Directory(BaseWorkspace, AuthCovered):
         self._delete_directory()
         self.path = str(Path(path) / self.title)
 
-    @check_authorization(action='workspace.delete')
+    @auth_covered_method(action_name='workspace.delete')
     def delete(self):
         if not self.filesystem_path.exists():
             raise WorkspaceManagerException(workspacemanager_exception.NO_DIR, self.filesystem_path)
