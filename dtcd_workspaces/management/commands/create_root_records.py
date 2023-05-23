@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from rest_auth.models import ProtectedResource, SecurityZone, KeyChain, User, Plugin
+from rest_auth.models import SecurityZone, User, Plugin
 
 
 class Command(BaseCommand):
@@ -32,19 +32,8 @@ class Command(BaseCommand):
             # TODO security zone with the given name might exist
             root_zone = SecurityZone(name='root_access')
             root_zone.save()
-            root_keychain = KeyChain(keychain_id=keychain_id, plugin=plugin, zone=root_zone)
+            root_keychain = KeyChain(keychain_id=keychain_id, zone=root_zone)
             root_keychain.save()
-
-            # TODO better logic for this statment?
-            # this protected resource object may exist already
-            root_protected_resource = ProtectedResource.objects.get_or_create(
-                object_id='',
-                defaults=dict(
-                    owner=admin,
-                    keychain=root_keychain,
-                    name='root_workspace_directory'
-                )
-            )
 
             self.stdout.write(self.style.SUCCESS('Successfully created necessary records in rest auth'))
         else:

@@ -8,17 +8,32 @@ from typing import List, Dict, Union, Iterable, Optional
 
 from dtcd_workspaces.workspaces import workspacemanager_exception
 from dtcd_workspaces.workspaces.workspacemanager_exception import WorkspaceManagerException
-from rest_auth.authentication import User
+from dtcd_workspaces.models import WorkspaceAuthCoveredModel
 from rest_auth.authorization import IAuthCovered, auth_covered_method, AccessDeniedError, check_authorization
-from .utils import manager, _get_dir_path, _is_uuid4, _decode_name, _rename, _remove, _copy, _get_file_name, _encode_name
+from .utils import manager, _get_dir_path, _is_uuid4, _decode_name, _rename, _remove, _copy, _get_file_name,\
+    _encode_name
 from ..settings import DIR_META_NAME, ROLE_MODEL_ACTIONS
 
 
-class AuthCovered:
-    """Provides interaction with Role Model"""
+class WorkspaceAuthCovered(WorkspaceAuthCoveredModel):
+    """Provides additional interaction with Role Model"""
 
-    def __init__(self, *args):
+    def get_object(cls, obj_id: str) -> Optional['IAuthCovered']:
+        """
+        returns
+        """
+
+    def __init__(self, obj_path: str):
+        """
+        Args:
+            obj_path (str): unique str, path for workspace of directory
+        """
+        super(self, WorkspaceAuthCovered).__init__()
+        self.obj_path = obj_path
         self.permissions = None
+
+    def get_plugin_name(self):
+        return self.__module__.split('.')[0]
 
     @auth_covered_method(action_name='workspace.create')
     def can_create(self):
@@ -65,14 +80,13 @@ class AuthCovered:
         return True
 
     def _load_permissions(self):
-        if hasattr(self, 'user') and self.user:
-            self.permissions = {'create': self.can_create_no_except(),
-                                'read': self.can_read_no_except(),
-                                'update': self.can_update_no_except(),
-                                'delete': self.can_delete_no_except()}
+        self.permissions = {'create': self.can_create_no_except(),
+                            'read': self.can_read_no_except(),
+                            'update': self.can_update_no_except(),
+                            'delete': self.can_delete_no_except()}
 
 
-class BaseWorkspace(abc.ABC):
+class BaseWorkspace(WorkspaceAuthCovered):
     """Represents any object related to workspaces (currently Workspace and Directory)"""
 
     # API_arg_name: Class_attr_name
@@ -100,6 +114,8 @@ class BaseWorkspace(abc.ABC):
         self.creation_time = getattr(self, 'creation_time', creation_time or datetime.datetime.now().timestamp())
         self.modification_time = None
         self.is_dir = False
+
+        WorkspaceAuthCovered.__init__(self, path)
 
     @classmethod
     def is_workspace(cls, _path: Path) -> bool:
@@ -144,9 +160,8 @@ class BaseWorkspace(abc.ABC):
         ids.append(Directory.get_id(from_path))
         return ids
 
-    def validate_move_to_target_directory(self, path: str, user):
-
-        target = Directory(uid=self.id, title=self.title, path=_encode_name(path)).accessed_by(user)
+    def validate_move_to_target_directory(self, path: str):
+        target = Directory(uid=self.id, title=self.title, path=_encode_name(path))
         target.can_create()
         if not target.filesystem_path.exists():
             raise WorkspaceManagerException(workspacemanager_exception.INVALID_PATH, path)
@@ -160,7 +175,7 @@ class BaseWorkspace(abc.ABC):
         return target
 
 
-class Workspace(BaseWorkspace, AuthCovered, IAuthCovered):
+class Workspace(BaseWorkspace):
     kwargs_map = dict(**BaseWorkspace.kwargs_map, content='content')
 
     def __init__(self, *args, uid: str = None, path: str = None, title: str = None, creation_time: float = None,
@@ -171,8 +186,9 @@ class Workspace(BaseWorkspace, AuthCovered, IAuthCovered):
                                creation_time=creation_time, modification_time=modification_time,
                                **kwargs)
         self.id = self.id or self._get_new_id()
-        self.plugin = self.get_plugin_name(__file__)
+        self.plugin = self.get_plugin_name()
         self._from_file = None
+
 
     @classmethod
     def get_id(cls, _path: Path):
@@ -244,7 +260,7 @@ class Workspace(BaseWorkspace, AuthCovered, IAuthCovered):
         return self.id
 
     def _move(self, path: str):
-        target = self.validate_move_to_target_directory(path, self.user)
+        target = self.validate_move_to_target_directory(path)
 
         self.can_update()
 
@@ -268,10 +284,9 @@ class Workspace(BaseWorkspace, AuthCovered, IAuthCovered):
         if not self.filesystem_path.exists():
             raise WorkspaceManagerException(workspacemanager_exception.NO_WORKSPACE, self.filesystem_path)
         self._delete_from_file()
-        self.delete_auth_record(ids=[self.id])
 
 
-class Directory(BaseWorkspace, AuthCovered):
+class Directory(BaseWorkspace):
     kwargs_map = dict(**BaseWorkspace.kwargs_map, id='id')
 
     dir_metafile_name = DIR_META_NAME
@@ -302,8 +317,8 @@ class Directory(BaseWorkspace, AuthCovered):
             else:
                 self.id = self._get_new_id()
 
-        AuthCovered.__init__(self, ids_chain=self.get_ids_chain(self.filesystem_path))
-        self.plugin = self.get_plugin_name(__file__)
+        WorkspaceAuthCovered.__init__(self)
+        self.plugin = self.get_plugin_name()
         self.is_dir = True
 
     def exists(self):
@@ -336,7 +351,6 @@ class Directory(BaseWorkspace, AuthCovered):
 
     def save(self):
         self._write_directory()
-        self.update_auth_record(_id=self.id, title=self.title)
 
     @property
     def filesystem_path(self):
@@ -458,7 +472,6 @@ class Directory(BaseWorkspace, AuthCovered):
     def _update_title(self, new_title: str):
         self._rename(new_title)
         # Call auth parent class to update its record if it has changed
-        self.update_auth_record(_id=self.id, title=new_title)
         self.title = new_title
         self.path = str(Path(self.path).parent / new_title)  # update path according to new_title
 
@@ -480,7 +493,7 @@ class Directory(BaseWorkspace, AuthCovered):
         _rename(self.filesystem_path, path)
 
     def _move(self, path: str):
-        target = self.validate_move_to_target_directory(path, self.user)
+        target = self.validate_move_to_target_directory(path)
 
         # Check if we allowed to move all the content
         for item in self._recursive_iterdir():
@@ -497,13 +510,9 @@ class Directory(BaseWorkspace, AuthCovered):
         if self.manager.final_path == self.filesystem_path:
             raise WorkspaceManagerException(workspacemanager_exception.DELETING_ROOT, self.filesystem_path)
 
-        # Check if we allowed to delete all the content and gather auth_records ids to be deleted
-        auth_record_ids = [self.id]
         for item in self._recursive_iterdir():
-            auth_record_ids.append(item.id)
             item.can_delete()  # Will raise an error if not
         self._delete_directory()
-        self.delete_auth_record(ids=auth_record_ids)
 
     def is_empty_dir(self):
         content = os.listdir(self.filesystem_path)
