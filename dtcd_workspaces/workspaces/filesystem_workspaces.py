@@ -11,7 +11,7 @@ from dtcd_workspaces.workspaces.workspacemanager_exception import WorkspaceManag
 from rest_auth.authentication import User
 from rest_auth.authorization import BaseProtectedResource, check_authorization
 from rest_auth.models import ProtectedResource
-from .utils import manager, _get_dir_path, _is_uuid4, _decode_name, _rename, _remove, _copy, _get_file_name, _encode_name
+from .utils import manager, _get_dir_path, _is_uuid4, decode_name, _rename, _remove, _copy, _get_file_name, encode_name
 from ..settings import DIR_META_NAME, ROLE_MODEL_ACTIONS
 
 
@@ -111,7 +111,7 @@ class BaseWorkspace(abc.ABC):
             for key, value in kwargs.get('_conf', {}).items():
                 if key in self.kwargs_map:
                     setattr(self, self.kwargs_map[key], value)
-        self.path = self.path if hasattr(self, 'path') else _decode_name(path)
+        self.path = self.path if hasattr(self, 'path') else decode_name(path)
         self.title = self.title if hasattr(self, 'title') else title
         self.meta = self.meta if hasattr(self, 'meta') else None
         self.creation_time = getattr(self, 'creation_time', creation_time or datetime.datetime.now().timestamp())
@@ -163,7 +163,7 @@ class BaseWorkspace(abc.ABC):
 
     def validate_move_to_target_directory(self, path: str, user):
 
-        target = Directory(uid=self.id, title=self.title, path=_encode_name(path)).accessed_by(user)
+        target = Directory(uid=self.id, title=self.title, path=encode_name(path)).accessed_by(user)
         target.can_create()
         if not target.filesystem_path.exists():
             raise WorkspaceManagerException(workspacemanager_exception.INVALID_PATH, path)
@@ -405,10 +405,10 @@ class Directory(BaseWorkspace, AuthCovered):
     def _retrieve_workspace_or_directory(self, item: Path) -> Union[Workspace, 'Directory']:
         if Workspace.is_workspace(item):
             human_readable_path = self.manager.get_human_readable_path(item.parent)
-            return Workspace(uid=Workspace.get_id(item), path=_encode_name(human_readable_path)).accessed_by(self.user)
+            return Workspace(uid=Workspace.get_id(item), path=encode_name(human_readable_path)).accessed_by(self.user)
         elif Directory.is_workspace_directory(item):
             human_readable_path = self.manager.get_human_readable_path(item)
-            return Directory(path=_encode_name(human_readable_path)).accessed_by(self.user)
+            return Directory(path=encode_name(human_readable_path)).accessed_by(self.user)
 
     def _load_meta(self):
         if not self.filesystem_path.exists():
@@ -418,7 +418,7 @@ class Directory(BaseWorkspace, AuthCovered):
             if key in self.kwargs_map:
                 setattr(self, self.kwargs_map[key], value)
         if self.filesystem_path != self.manager.final_path:
-            self.title = _decode_name(self.filesystem_path.name)
+            self.title = decode_name(self.filesystem_path.name)
         self._load_permissions()
 
     def as_json(self):
@@ -451,7 +451,7 @@ class Directory(BaseWorkspace, AuthCovered):
     @check_authorization(action='workspace.create')
     def create_workspace(self, *args, workspace_conf: dict = None) -> str:
         """Create workspace, write data on drive and return id"""
-        workspace = Workspace(_conf=workspace_conf, path=_encode_name(self.path))
+        workspace = Workspace(_conf=workspace_conf, path=encode_name(self.path))
         workspace.save()
         return workspace.id
 

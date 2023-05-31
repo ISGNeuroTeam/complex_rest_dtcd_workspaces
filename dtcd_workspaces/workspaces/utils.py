@@ -11,18 +11,18 @@ from pathlib import Path
 from typing import List
 
 
-def _encode_name(name: str) -> str:
+def encode_name(name: str) -> str:
     encoded = base64.urlsafe_b64encode(name.encode()).decode()
     return encoded
 
 
-def _decode_name(encoded_name: str) -> str:
+def decode_name(encoded_name: str) -> str:
     decoded = base64.urlsafe_b64decode(encoded_name).decode()
     return decoded
 
 
 def _get_dir_path(name: str, path: Path) -> Path:
-    _path = path / _encode_name(name)
+    _path = path / encode_name(name)
     return _path
 
 
@@ -79,7 +79,7 @@ class FilesystemWorkspaceManager:
         """Decode path part by part"""
         resolved_path = Path('')
         for token in path_tokens:
-            resolved_path /= _decode_name(token)
+            resolved_path /= decode_name(token)
         return resolved_path
 
     def _get_tokens_from_path(self, path: str):

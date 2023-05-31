@@ -13,7 +13,7 @@ class TWorkspace(Workspace):
 
     def validate_move_to_target_directory(self, path: str, user):
 
-        target = TDirectory(uid=self.id, title=self.title, path=utils._encode_name(path)).accessed_by(user)
+        target = TDirectory(uid=self.id, title=self.title, path=utils.encode_name(path)).accessed_by(user)
         target.can_create()
         if not target.filesystem_path.exists():
             raise WorkspaceManagerException(workspacemanager_exception.INVALID_PATH, path)
@@ -49,14 +49,14 @@ class TDirectory(Directory):
     def _retrieve_workspace_or_directory(self, item: Path) -> Union[TWorkspace, 'TDirectory']:
         if Workspace.is_workspace(item):
             human_readable_path = self.manager.get_human_readable_path(item.parent)
-            return TWorkspace(uid=Workspace.get_id(item), path=utils._encode_name(human_readable_path)).accessed_by(self.user)
+            return TWorkspace(uid=Workspace.get_id(item), path=utils.encode_name(human_readable_path)).accessed_by(self.user)
         elif Directory.is_workspace_directory(item):
             human_readable_path = self.manager.get_human_readable_path(item)
-            return TDirectory(path=utils._encode_name(human_readable_path)).accessed_by(self.user)
+            return TDirectory(path=utils.encode_name(human_readable_path)).accessed_by(self.user)
 
     def validate_move_to_target_directory(self, path: str, user):
 
-        target = TDirectory(uid=self.id, title=self.title, path=utils._encode_name(path)).accessed_by(user)
+        target = TDirectory(uid=self.id, title=self.title, path=utils.encode_name(path)).accessed_by(user)
         target.can_create()
         if not target.filesystem_path.exists():
             raise WorkspaceManagerException(workspacemanager_exception.INVALID_PATH, path)

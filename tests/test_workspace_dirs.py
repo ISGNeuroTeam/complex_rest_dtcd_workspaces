@@ -69,7 +69,7 @@ class TestWorkspaceDirs(TransactionTestCase):
         directory_contents = [p for p in self.base_path.glob('*') if p.is_dir()]
 
         self.assertEqual(len(directory_contents), 1)  # only one dir in root dir
-        self.assertEqual(utils._encode_name(title), directory_contents[0].name)  # fs dir name was encoded right
+        self.assertEqual(utils.encode_name(title), directory_contents[0].name)  # fs dir name was encoded right
         with open(directory_contents[0] / self.meta_name) as fr:
             dr = json.load(fr)
         self.assertEqual(title, dr.get('title'))
@@ -77,7 +77,7 @@ class TestWorkspaceDirs(TransactionTestCase):
     def test_create_workspace(self):
         parent_title = 'in_root_dir'
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": parent_title})
-        in_root_dir = TDirectory(path=utils._encode_name(parent_title))
+        in_root_dir = TDirectory(path=utils.encode_name(parent_title))
         title = 'dir_ws'
         content = 'dir_ws_content'
         ws_id = in_root_dir.accessed_by(self.admin).create_workspace(workspace_conf={
@@ -95,11 +95,11 @@ class TestWorkspaceDirs(TransactionTestCase):
         title = "dir_inside_another_dir"
         parent_title = 'in_root_dir'
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": parent_title})
-        in_root_dir = TDirectory(path=utils._encode_name(parent_title))
+        in_root_dir = TDirectory(path=utils.encode_name(parent_title))
         in_root_dir.accessed_by(self.admin).create_dir(_conf={"title": title, "dir": None})
         directory_contents = [p for p in in_root_dir.filesystem_path.glob('*') if p.is_dir()]
         self.assertEqual(len(directory_contents), 1)  # only one dir in root dir
-        self.assertEqual(utils._encode_name(title), directory_contents[0].name)  # fs dir name was encoded right
+        self.assertEqual(utils.encode_name(title), directory_contents[0].name)  # fs dir name was encoded right
         with open(directory_contents[0] / self.meta_name) as fr:
             dr = json.load(fr)
         self.assertEqual(title, dr.get('title'))
@@ -132,7 +132,7 @@ class TestWorkspaceDirs(TransactionTestCase):
     def test_list_dir(self):
         parent_title = 'in_root_dir'
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": parent_title})
-        in_root_dir = TDirectory(path=utils._encode_name(parent_title))
+        in_root_dir = TDirectory(path=utils.encode_name(parent_title))
         in_root_dir.accessed_by(self.admin).create_dir(_conf={"title": 'catalogue0'})
         in_root_dir.accessed_by(self.admin).create_dir(_conf={"title": 'catalogue1'})
         ws_id1 = in_root_dir.accessed_by(self.admin).create_workspace(workspace_conf={
@@ -173,7 +173,7 @@ class TestWorkspaceDirs(TransactionTestCase):
     def test_get_directory_in_root(self):
         title = "in_root_dir"
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": title})
-        dr = TDirectory(path=utils._encode_name(title)).accessed_by(self.admin).read()
+        dr = TDirectory(path=utils.encode_name(title)).accessed_by(self.admin).read()
         self.assertEqual(title, dr['path'])
         self.assertEqual(title, dr['title'])
         self.assertEqual(True, dr['is_dir'])
@@ -181,13 +181,13 @@ class TestWorkspaceDirs(TransactionTestCase):
     def test_get_workspace(self):
         parent_title = 'in_root_dir'
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": parent_title})
-        in_root_dir = TDirectory(path=utils._encode_name(parent_title))
+        in_root_dir = TDirectory(path=utils.encode_name(parent_title))
         title = 'dir_ws'
         content = 'dir_ws_content'
         ws_id = in_root_dir.accessed_by(self.admin).create_workspace(workspace_conf={
             "title": title,
             "content": content})
-        ws = TWorkspace(uid=ws_id, path=utils._encode_name(parent_title)).accessed_by(self.admin).read()
+        ws = TWorkspace(uid=ws_id, path=utils.encode_name(parent_title)).accessed_by(self.admin).read()
         self.assertEqual(ws_id, ws['id'])
         self.assertEqual(parent_title, ws['path'])
         self.assertEqual(title, ws['title'])
@@ -198,9 +198,9 @@ class TestWorkspaceDirs(TransactionTestCase):
         title = "dir_inside_another_dir"
         parent_title = 'in_root_dir'
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": parent_title})
-        in_root_dir = TDirectory(path=utils._encode_name(parent_title))
+        in_root_dir = TDirectory(path=utils.encode_name(parent_title))
         in_root_dir.accessed_by(self.admin).create_dir(_conf={"title": title, "dir": None})
-        dr = TDirectory(path=utils._encode_name(f"{parent_title}/{title}")).accessed_by(self.admin).read()
+        dr = TDirectory(path=utils.encode_name(f"{parent_title}/{title}")).accessed_by(self.admin).read()
         self.assertEqual(f"{parent_title}/{title}", dr['path'])
         self.assertEqual(title, dr['title'])
         self.assertEqual(True, dr['is_dir'])
@@ -272,11 +272,11 @@ class TestWorkspaceDirs(TransactionTestCase):
         content = 'dir_ws_content'
         parent_title = 'in_root_dir'
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": parent_title})
-        in_root_dir = TDirectory(path=utils._encode_name(parent_title))
+        in_root_dir = TDirectory(path=utils.encode_name(parent_title))
         ws_id = in_root_dir.accessed_by(self.admin).create_workspace(workspace_conf={
             "title": title,
             "content": content})
-        ws = TWorkspace(uid=ws_id, path=utils._encode_name(parent_title)).accessed_by(self.admin)
+        ws = TWorkspace(uid=ws_id, path=utils.encode_name(parent_title)).accessed_by(self.admin)
         data = ws.read()
         self.assertAlmostEqual(data['creation_time'], data['modification_time'], delta=1)
         time.sleep(1)
@@ -295,11 +295,11 @@ class TestWorkspaceDirs(TransactionTestCase):
         new_content = 'tnetnoc_sw_rid'
         parent_title = 'in_root_dir'
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": parent_title})
-        in_root_dir = TDirectory(path=utils._encode_name(parent_title))
+        in_root_dir = TDirectory(path=utils.encode_name(parent_title))
         ws_id = in_root_dir.accessed_by(self.admin).create_workspace(workspace_conf={
             "title": title,
             "content": content})
-        ws = TWorkspace(uid=ws_id, path=utils._encode_name(parent_title)).accessed_by(self.admin)
+        ws = TWorkspace(uid=ws_id, path=utils.encode_name(parent_title)).accessed_by(self.admin)
         ws.update(_conf={"content": new_content})
         data = ws.read()
         self.assertAlmostEqual(data['creation_time'], data['modification_time'], delta=1)
@@ -320,11 +320,11 @@ class TestWorkspaceDirs(TransactionTestCase):
         new_content = 'tnetnoc_sw_rid'
         parent_title = 'in_root_dir'
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": parent_title})
-        in_root_dir = TDirectory(path=utils._encode_name(parent_title))
+        in_root_dir = TDirectory(path=utils.encode_name(parent_title))
         ws_id = in_root_dir.accessed_by(self.admin).create_workspace(workspace_conf={
             "title": title,
             "content": content})
-        ws = TWorkspace(uid=ws_id, path=utils._encode_name(parent_title)).accessed_by(self.admin)
+        ws = TWorkspace(uid=ws_id, path=utils.encode_name(parent_title)).accessed_by(self.admin)
         data = ws.read()
         self.assertAlmostEqual(data['creation_time'], data['modification_time'], delta=1)
         time.sleep(1)
@@ -341,7 +341,7 @@ class TestWorkspaceDirs(TransactionTestCase):
         title = 'in_root_dir'
         new_title = 'rid_toor_ni'
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": title})
-        in_root_dir = TDirectory(path=utils._encode_name(title))
+        in_root_dir = TDirectory(path=utils.encode_name(title))
         in_root_dir.update(_conf={"new_title": new_title})
         data = in_root_dir.read()
         self.assertEqual(new_title, data['path'])
@@ -353,9 +353,9 @@ class TestWorkspaceDirs(TransactionTestCase):
         new_title = 'rid_rethona_edisni_rid'
         parent_title = 'in_root_dir'
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": parent_title})
-        in_root_dir = TDirectory(path=utils._encode_name(parent_title))
+        in_root_dir = TDirectory(path=utils.encode_name(parent_title))
         in_root_dir.accessed_by(self.admin).create_dir(_conf={"title": title, "dir": None})
-        dr = TDirectory(path=utils._encode_name(f"{parent_title}/{title}")).accessed_by(self.admin)
+        dr = TDirectory(path=utils.encode_name(f"{parent_title}/{title}")).accessed_by(self.admin)
         dr.update(_conf={"new_title": new_title})
         data = dr.read()
         self.assertEqual(f"{parent_title}/{new_title}", data['path'])
@@ -398,7 +398,7 @@ class TestWorkspaceDirs(TransactionTestCase):
         parent_dir_title = 'in_root_dir'
         dir_title = 'next_dir'
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": parent_dir_title})
-        in_root_dir = TDirectory(path=utils._encode_name(parent_dir_title))
+        in_root_dir = TDirectory(path=utils.encode_name(parent_dir_title))
         in_root_dir.accessed_by(self.admin).create_dir(_conf={"title": dir_title})
         ws_id = self.root_dir.accessed_by(self.admin).create_workspace(workspace_conf={
             "title": title,
@@ -432,11 +432,11 @@ class TestWorkspaceDirs(TransactionTestCase):
         destination_dir = 'dst'
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": source_dir})
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": destination_dir})
-        src = TDirectory(path=utils._encode_name(source_dir))
+        src = TDirectory(path=utils.encode_name(source_dir))
         ws_id = src.accessed_by(self.admin).create_workspace(workspace_conf={
             "title": title,
             "content": content})
-        ws = TWorkspace(uid=ws_id, path=utils._encode_name(source_dir))
+        ws = TWorkspace(uid=ws_id, path=utils.encode_name(source_dir))
         old_path = ws.filesystem_path.parent
         ws.update(_conf={"new_path": destination_dir})
         new_path = ws.filesystem_path.parent
@@ -463,7 +463,7 @@ class TestWorkspaceDirs(TransactionTestCase):
         dir_title = 'in_root_dir'
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": dir_title})
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": title})
-        dr = TDirectory(path=utils._encode_name(title)).accessed_by(self.admin)
+        dr = TDirectory(path=utils.encode_name(title)).accessed_by(self.admin)
         old_path = dr.filesystem_path.parent
         dr.update(_conf={"new_path": dir_title})
         new_path = dr.filesystem_path.parent
@@ -487,9 +487,9 @@ class TestWorkspaceDirs(TransactionTestCase):
         next_dir = "next_dir"
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": dir_title})
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": title})
-        in_root_dir = TDirectory(path=utils._encode_name(dir_title)).accessed_by(self.admin)
+        in_root_dir = TDirectory(path=utils.encode_name(dir_title)).accessed_by(self.admin)
         in_root_dir.create_dir(_conf={"title": next_dir})
-        dr = TDirectory(path=utils._encode_name(title)).accessed_by(self.admin)
+        dr = TDirectory(path=utils.encode_name(title)).accessed_by(self.admin)
         old_path = dr.filesystem_path.parent
         dr.update(_conf={"new_path": f"{dir_title}/{next_dir}"})
         new_path = dr.filesystem_path.parent
@@ -513,9 +513,9 @@ class TestWorkspaceDirs(TransactionTestCase):
         destination_dir = 'dst'
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": source_dir})
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": destination_dir})
-        src = TDirectory(path=utils._encode_name(source_dir))
+        src = TDirectory(path=utils.encode_name(source_dir))
         src.accessed_by(self.admin).create_dir(_conf={"title": title})
-        dr = TDirectory(path=utils._encode_name(f"{source_dir}/{title}")).accessed_by(self.admin)
+        dr = TDirectory(path=utils.encode_name(f"{source_dir}/{title}")).accessed_by(self.admin)
         old_path = dr.filesystem_path.parent
         dr.update(_conf={"new_path": destination_dir})
         new_path = dr.filesystem_path.parent
@@ -537,7 +537,7 @@ class TestWorkspaceDirs(TransactionTestCase):
         dir_title = 'in_root_dir'
         next_dir = "next_dir"
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": dir_title})
-        in_root_dir = TDirectory(path=utils._encode_name(dir_title)).accessed_by(self.admin)
+        in_root_dir = TDirectory(path=utils.encode_name(dir_title)).accessed_by(self.admin)
         in_root_dir.create_dir(_conf={"title": next_dir})
         try:
             in_root_dir.update(_conf={"new_path": f"{dir_title}/{next_dir}"})
@@ -560,11 +560,11 @@ class TestWorkspaceDirs(TransactionTestCase):
         content = 'dark secrets'
         dir_title = 'in_root_dir'
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": dir_title})
-        in_root_dir = TDirectory(path=utils._encode_name(dir_title)).accessed_by(self.admin)
+        in_root_dir = TDirectory(path=utils.encode_name(dir_title)).accessed_by(self.admin)
         ws_id = in_root_dir.accessed_by(self.admin).create_workspace(workspace_conf={
             "title": title,
             "content": content})
-        ws = TWorkspace(uid=ws_id, path=utils._encode_name(dir_title))
+        ws = TWorkspace(uid=ws_id, path=utils.encode_name(dir_title))
         ws.accessed_by(self.admin).delete()
         self.assertEqual(len(list(in_root_dir.filesystem_path.glob('*.json'))), 0)
 
@@ -574,7 +574,7 @@ class TestWorkspaceDirs(TransactionTestCase):
         dir_title = 'in_root_dir'
         next_dir = "next_dir"
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": dir_title})
-        in_root_dir = TDirectory(path=utils._encode_name(dir_title)).accessed_by(self.admin)
+        in_root_dir = TDirectory(path=utils.encode_name(dir_title)).accessed_by(self.admin)
         in_root_dir.accessed_by(self.admin).create_workspace(workspace_conf={
             "title": title,
             "content": content})
@@ -592,9 +592,9 @@ class TestWorkspaceDirs(TransactionTestCase):
         dir_title = 'in_root_dir'
         next_dir = "next_dir"
         self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": dir_title})
-        in_root_dir = TDirectory(path=utils._encode_name(dir_title)).accessed_by(self.admin)
+        in_root_dir = TDirectory(path=utils.encode_name(dir_title)).accessed_by(self.admin)
         in_root_dir.create_dir(_conf={"title": next_dir})
-        dr = TDirectory(path=utils._encode_name(f"{dir_title}/{next_dir}")).accessed_by(self.admin)
+        dr = TDirectory(path=utils.encode_name(f"{dir_title}/{next_dir}")).accessed_by(self.admin)
         dr.accessed_by(self.admin).create_workspace(workspace_conf={
             "title": title,
             "content": content})
