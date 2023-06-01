@@ -1,3 +1,4 @@
+import datetime
 import json
 from typing import List
 
@@ -47,6 +48,10 @@ class Directory(DirectoryContent):
         temp_dict = {}
         for attr in self.saved_to_file_attributes:
             temp_dict[attr] = getattr(self, attr)
+        if self.creation_time is None:
+            self.creation_time = datetime.datetime.now().timestamp()
+        else:
+            self.modification_time = datetime.datetime.now().timestamp()
 
         self.write_file(temp_dict, self.dir_meta_path)
 
