@@ -229,7 +229,7 @@ class Workspace(BaseWorkspace, AuthCovered):
             raise WorkspaceManagerException(workspacemanager_exception.NO_WORKSPACE, self.id)
 
     def _save_to_file(self):
-        self.manager.write_file(
+        self.manager._write_file(
             self.as_dict(),
             self.filesystem_path
         )
@@ -335,7 +335,7 @@ class Directory(BaseWorkspace, AuthCovered):
             except IOError:
                 raise WorkspaceManagerException(workspacemanager_exception.UNABLE_TO_MKDIR, self.filesystem_path)
 
-            self.manager.write_file(
+            self.manager._write_file(
                 self.as_dict(),
                 self._meta_file
             )
@@ -483,7 +483,7 @@ class Directory(BaseWorkspace, AuthCovered):
 
     def _update_meta(self, new_meta: dict):
         self.meta = new_meta
-        self.manager.write_file(
+        self.manager._write_file(
             self.as_dict(),
             self._meta_file
         )

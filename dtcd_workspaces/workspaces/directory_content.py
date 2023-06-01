@@ -46,8 +46,28 @@ class DirectoryContent:
     def get_absolute_filesystem_path(path: str) -> str:
         return str(Path(WORKSPACE_BASE_PATH) / DirectoryContent._get_relative_filesystem_path(path))
 
+    def _write_attributes_to_json_file(self, absolute_file_path: Path):
+        if self.creation_time is None:
+            self.creation_time = datetime.datetime.now().timestamp()
+        else:
+            self.modification_time = datetime.datetime.now().timestamp()
+        temp_dict = {}
+        for attr in self.saved_to_file_attributes:
+            temp_dict[attr] = getattr(self, attr)
+
+        self._write_file(temp_dict, absolute_file_path)
+
+    def _read_attributes_from_json_file(self, absolute_file_path: Path):
+        """
+        Load attributes from json file
+        """
+        with open(absolute_file_path, 'r', encoding='UTF-8') as f:
+            dct = json.load(f)
+            for attr in self.saved_to_file_attributes:
+                setattr(self, attr, dct[attr])
+
     @staticmethod
-    def write_file(data: dict, absolute_filesystem_path: Path):
+    def _write_file(data: dict, absolute_filesystem_path: Path):
         temp_file = Path(WORKSPACE_TMP_PATH) / Path(f'temp_{str(uuid.uuid4())}')
         try:
             temp_file.write_text(json.dumps(data))

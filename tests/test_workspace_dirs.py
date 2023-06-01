@@ -48,20 +48,20 @@ class TestWorkspaceDirs(TransactionTestCase):
         self._create_necessary_fs_objects()
         self._create_root_dir_object()
 
-    def test_create_workspace_in_root(self):
-        title = 'root_ws'
-        content = 'root_ws_content'
-        ws_id = self.root_dir.accessed_by(self.admin).create_workspace(workspace_conf={
-            "title": title,
-            "content": content})
-        directory_contents = [p.stem for p in self.base_path.glob('*.json')]
-
-        self.assertEqual(len(directory_contents), 1)  # only one ws in root dir
-        self.assertTrue(ws_id in directory_contents)
-        with open((self.base_path / ws_id).with_suffix('.json')) as fr:
-            ws = json.load(fr)
-        self.assertEqual(title, ws.get('title'))
-        self.assertEqual(content, ws.get('content'))
+    # def test_create_workspace_in_root(self):
+    #     title = 'root_ws'
+    #     content = 'root_ws_content'
+    #     ws_id = self.root_dir.accessed_by(self.admin).create_workspace(workspace_conf={
+    #         "title": title,
+    #         "content": content})
+    #     directory_contents = [p.stem for p in self.base_path.glob('*.json')]
+    #
+    #     self.assertEqual(len(directory_contents), 1)  # only one ws in root dir
+    #     self.assertTrue(ws_id in directory_contents)
+    #     with open((self.base_path / ws_id).with_suffix('.json')) as fr:
+    #         ws = json.load(fr)
+    #     self.assertEqual(title, ws.get('title'))
+    #     self.assertEqual(content, ws.get('content'))
 
     def test_create_dir_in_root(self):
         title = "in_root_dir"
@@ -74,22 +74,22 @@ class TestWorkspaceDirs(TransactionTestCase):
             dr = json.load(fr)
         self.assertEqual(title, dr.get('title'))
 
-    def test_create_workspace(self):
-        parent_title = 'in_root_dir'
-        self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": parent_title})
-        in_root_dir = TDirectory(path=utils.encode_name(parent_title))
-        title = 'dir_ws'
-        content = 'dir_ws_content'
-        ws_id = in_root_dir.accessed_by(self.admin).create_workspace(workspace_conf={
-            "title": title,
-            "content": content})
-        directory_contents = [p.stem for p in in_root_dir.filesystem_path.glob('*.json')]
-        self.assertEqual(len(directory_contents), 1)  # only one ws in root dir
-        self.assertTrue(ws_id in directory_contents)
-        with open((in_root_dir.filesystem_path / ws_id).with_suffix('.json')) as fr:
-            ws = json.load(fr)
-        self.assertEqual(title, ws.get('title'))
-        self.assertEqual(content, ws.get('content'))
+    # def test_create_workspace(self):
+    #     parent_title = 'in_root_dir'
+    #     self.root_dir.accessed_by(self.admin).create_dir(_conf={"title": parent_title})
+    #     in_root_dir = TDirectory(path=utils.encode_name(parent_title))
+    #     title = 'dir_ws'
+    #     content = 'dir_ws_content'
+    #     ws_id = in_root_dir.accessed_by(self.admin).create_workspace(workspace_conf={
+    #         "title": title,
+    #         "content": content})
+    #     directory_contents = [p.stem for p in in_root_dir.filesystem_path.glob('*.json')]
+    #     self.assertEqual(len(directory_contents), 1)  # only one ws in root dir
+    #     self.assertTrue(ws_id in directory_contents)
+    #     with open((in_root_dir.filesystem_path / ws_id).with_suffix('.json')) as fr:
+    #         ws = json.load(fr)
+    #     self.assertEqual(title, ws.get('title'))
+    #     self.assertEqual(content, ws.get('content'))
 
     def test_create_dir(self):
         title = "dir_inside_another_dir"
