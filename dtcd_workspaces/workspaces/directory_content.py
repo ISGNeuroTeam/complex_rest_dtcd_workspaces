@@ -7,14 +7,17 @@ import datetime
 from typing import List
 from pathlib import Path
 
-from dtcd_workspaces.workspaces.workspacemanager_exception import WorkspaceManagerException
+from dtcd_workspaces.workspaces.workspacemanager_exception import DirectoryContentException
 from dtcd_workspaces.workspaces.utils import decode_name, encode_name
 
 from dtcd_workspaces.settings import WORKSPACE_BASE_PATH, WORKSPACE_TMP_PATH, DIR_META_NAME
-from dtcd_workspaces.workspaces.utils import encode_name, decode_name
+from dtcd_workspaces.workspaces.utils import encode_name, decode_name, copy, remove
 
 
 class DirectoryContent:
+    class DoesNotExist(Exception):
+        pass
+
     saved_to_file_attributes = [
         'creation_time', 'modification_time', 'title', 'meta'
     ]
@@ -43,7 +46,7 @@ class DirectoryContent:
         return self._get_relative_filesystem_path(self.path)
 
     @staticmethod
-    def get_absolute_filesystem_path(path: str) -> str:
+    def _get_absolute_filesystem_path(path: str) -> str:
         return str(Path(WORKSPACE_BASE_PATH) / DirectoryContent._get_relative_filesystem_path(path))
 
     def _write_attributes_to_json_file(self, absolute_file_path: Path):
@@ -73,7 +76,7 @@ class DirectoryContent:
             temp_file.write_text(json.dumps(data))
             temp_file.rename(absolute_filesystem_path)  # atomic operation
         except IOError:
-            raise WorkspaceManagerException(WorkspaceManagerException.IO_ERROR, absolute_filesystem_path)
+            raise DirectoryContentException(DirectoryContentException.IO_ERROR, absolute_filesystem_path)
 
 
     @staticmethod
@@ -98,16 +101,15 @@ class DirectoryContent:
             )
         )
 
-
     @staticmethod
     def _validate_path(path):
         tokens = path.split(os.sep)
 
         for token in tokens[:len(tokens) - 1]:  # security
             if token == '..' or token == '':
-                raise WorkspaceManagerException(WorkspaceManagerException.PATH_WITH_DOTS, path)
+                raise DirectoryContentException(DirectoryContentException.PATH_WITH_DOTS, path)
         if tokens[-1] == '..':
-            raise WorkspaceManagerException(WorkspaceManagerException.PATH_WITH_DOTS, path)
+            raise DirectoryContentException(DirectoryContentException.PATH_WITH_DOTS, path)
         return path
 
     def save(self):
@@ -119,6 +121,7 @@ class DirectoryContent:
     def load(self):
         """
         load attributes from filesystem
+        Raises DirectoryContentException.DOES_NOT_EXIST exception
         """
         raise NotImplementedError
 
@@ -129,11 +132,28 @@ class DirectoryContent:
         """
         raise NotImplementedError
 
-    def move(self, new_path):
+    def move(self, directory_path: str):
         """
         Moves all content to new path
+        Args:
+            directory_path (str): relative path to directory where to put content
         """
-        raise NotImplementedError
+        new_path = f'{directory_path}/{self.title}'
+
+        new_absolute_path = Path(self._get_absolute_filesystem_path(new_path))
+        directory_absolute_path = Path(self._get_absolute_filesystem_path(directory_path))
+
+        if not directory_absolute_path.exists():
+            raise DirectoryContentException(DirectoryContentException.INVALID_PATH, directory_path)
+        if new_path == self.path:
+            raise DirectoryContentException(DirectoryContentException.NEW_PATH_EQ_OLD_PATH, directory_path)
+        if self.absolute_filesystem_path in new_absolute_path.parents:
+            raise DirectoryContentException(DirectoryContentException.MOVING_DIR_INSIDE_ITSELF, self.path, directory_path)
+
+        copy(self.absolute_filesystem_path, directory_absolute_path)
+        remove(self.absolute_filesystem_path)
+
+        self.path = new_path
 
     def delete(self):
         pass

@@ -7,11 +7,11 @@ from pathlib import Path
 from typing import List, Dict, Union, Iterable, Optional
 
 from dtcd_workspaces.workspaces import workspacemanager_exception
-from dtcd_workspaces.workspaces.workspacemanager_exception import WorkspaceManagerException
+from dtcd_workspaces.workspaces.workspacemanager_exception import DirectoryContentException
 from rest_auth.authentication import User
 from rest_auth.authorization import BaseProtectedResource, check_authorization
 from rest_auth.models import ProtectedResource
-from .utils import manager, _get_dir_path, _is_uuid4, decode_name, _rename, _remove, _copy, _get_file_name, encode_name
+from .utils import manager, _get_dir_path, _is_uuid4, decode_name, _rename, remove, copy, _get_file_name, encode_name
 from ..settings import DIR_META_NAME, ROLE_MODEL_ACTIONS
 
 
@@ -166,11 +166,11 @@ class BaseWorkspace(abc.ABC):
         target = Directory(uid=self.id, title=self.title, path=encode_name(path)).accessed_by(user)
         target.can_create()
         if not target.filesystem_path.exists():
-            raise WorkspaceManagerException(workspacemanager_exception.INVALID_PATH, path)
+            raise DirectoryContentException(workspacemanager_exception.INVALID_PATH, path)
         if target.filesystem_path == self.filesystem_path.parent:
-            raise WorkspaceManagerException(workspacemanager_exception.NEW_PATH_EQ_OLD_PATH, path)
+            raise DirectoryContentException(workspacemanager_exception.NEW_PATH_EQ_OLD_PATH, path)
         if self.filesystem_path in target.filesystem_path.parents:
-            raise WorkspaceManagerException(workspacemanager_exception.MOVING_DIR_INSIDE_ITSELF,
+            raise DirectoryContentException(workspacemanager_exception.MOVING_DIR_INSIDE_ITSELF,
                                             self.filesystem_path,
                                             target.filesystem_path)
 
@@ -226,7 +226,7 @@ class Workspace(BaseWorkspace, AuthCovered):
                 workspace = json.load(fr)
                 return workspace
         except IOError:
-            raise WorkspaceManagerException(workspacemanager_exception.NO_WORKSPACE, self.id)
+            raise DirectoryContentException(workspacemanager_exception.NO_WORKSPACE, self.id)
 
     def _save_to_file(self):
         self.manager._write_file(
@@ -235,7 +235,7 @@ class Workspace(BaseWorkspace, AuthCovered):
         )
 
     def _delete_from_file(self):
-        _remove(self.filesystem_path)
+        remove(self.filesystem_path)
 
     def save(self):
         self._save_to_file()
@@ -254,7 +254,7 @@ class Workspace(BaseWorkspace, AuthCovered):
     def update(self, *args, _conf: dict = None):
 
         if not self.filesystem_path.exists():
-            raise WorkspaceManagerException(workspacemanager_exception.NO_WORKSPACE, self.filesystem_path)
+            raise DirectoryContentException(workspacemanager_exception.NO_WORKSPACE, self.filesystem_path)
 
         if 'new_path' in _conf:
             self._move(_conf['new_path'])
@@ -267,7 +267,7 @@ class Workspace(BaseWorkspace, AuthCovered):
 
         self.can_update()
 
-        _copy(self.filesystem_path, target.filesystem_path)
+        copy(self.filesystem_path, target.filesystem_path)
         self._delete_from_file()
         self.path = path
 
@@ -285,7 +285,7 @@ class Workspace(BaseWorkspace, AuthCovered):
     @check_authorization(action='workspace.delete')
     def delete(self):
         if not self.filesystem_path.exists():
-            raise WorkspaceManagerException(workspacemanager_exception.NO_WORKSPACE, self.filesystem_path)
+            raise DirectoryContentException(workspacemanager_exception.NO_WORKSPACE, self.filesystem_path)
         self._delete_from_file()
         self.delete_auth_record(ids=[self.id])
 
@@ -303,7 +303,7 @@ class Directory(BaseWorkspace, AuthCovered):
                     "new_title" not in _conf and \
                     "new_path" not in _conf and \
                     "new_meta" not in _conf:
-                raise WorkspaceManagerException(workspacemanager_exception.NO_DIR_NAME)
+                raise DirectoryContentException(workspacemanager_exception.NO_DIR_NAME)
             if 'new_path' in _conf:
                 pass  # move
             elif 'title' in _conf:
@@ -333,25 +333,25 @@ class Directory(BaseWorkspace, AuthCovered):
             try:
                 self.filesystem_path.mkdir()
             except IOError:
-                raise WorkspaceManagerException(workspacemanager_exception.UNABLE_TO_MKDIR, self.filesystem_path)
+                raise DirectoryContentException(workspacemanager_exception.UNABLE_TO_MKDIR, self.filesystem_path)
 
             self.manager._write_file(
                 self.as_dict(),
                 self._meta_file
             )
         else:
-            raise WorkspaceManagerException(workspacemanager_exception.DIR_EXISTS)
+            raise DirectoryContentException(workspacemanager_exception.DIR_EXISTS)
 
     def validate_dir_name(self, name):
         if '/' in name:
-            raise WorkspaceManagerException(workspacemanager_exception.SLASHES_IN_DIR_NAME, name)
+            raise DirectoryContentException(workspacemanager_exception.SLASHES_IN_DIR_NAME, name)
         if not name:
-            raise WorkspaceManagerException(workspacemanager_exception.EMPTY_DIR_NAME)
+            raise DirectoryContentException(workspacemanager_exception.EMPTY_DIR_NAME)
         if name == self.dir_metafile_name:
-            raise WorkspaceManagerException(workspacemanager_exception.DIR_NAME_RESERVED_FOR_META, name)
+            raise DirectoryContentException(workspacemanager_exception.DIR_NAME_RESERVED_FOR_META, name)
 
     def _delete_directory(self):
-        _remove(self.filesystem_path)
+        remove(self.filesystem_path)
 
     def save(self):
         self._write_directory()
@@ -412,7 +412,7 @@ class Directory(BaseWorkspace, AuthCovered):
 
     def _load_meta(self):
         if not self.filesystem_path.exists():
-            raise WorkspaceManagerException(workspacemanager_exception.NO_DIR, self.filesystem_path)
+            raise DirectoryContentException(workspacemanager_exception.NO_DIR, self.filesystem_path)
         meta: dict = self.read_dir_meta(self.filesystem_path)
         for key, value in meta.items():
             if key in self.kwargs_map:
@@ -431,7 +431,7 @@ class Directory(BaseWorkspace, AuthCovered):
             return self.as_dict()
         if not self.path:
             return self.as_dict()
-        raise WorkspaceManagerException(workspacemanager_exception.NO_DIR, self.filesystem_path)
+        raise DirectoryContentException(workspacemanager_exception.NO_DIR, self.filesystem_path)
 
     @check_authorization(action='workspace.read')
     def list(self) -> Dict[str, List]:
@@ -472,7 +472,7 @@ class Directory(BaseWorkspace, AuthCovered):
         elif 'new_meta' in _conf:
             self._update_meta(_conf['new_meta'])
         else:
-            raise WorkspaceManagerException(workspacemanager_exception.NEW_TITLE_OR_PATH_NOT_PROVIDED)
+            raise DirectoryContentException(workspacemanager_exception.NEW_TITLE_OR_PATH_NOT_PROVIDED)
 
     def _update_title(self, new_title: str):
         self._rename(new_title)
@@ -490,12 +490,12 @@ class Directory(BaseWorkspace, AuthCovered):
 
     def _rename(self, title: str):
         if self.filesystem_path == self.manager.final_path:
-            raise WorkspaceManagerException(workspacemanager_exception.IS_ROOT)
+            raise DirectoryContentException(workspacemanager_exception.IS_ROOT)
         path = _get_dir_path(title, self.filesystem_path.parent)
         if path == self.filesystem_path:
-            raise WorkspaceManagerException(workspacemanager_exception.NEW_PATH_EQ_OLD_PATH, path)
+            raise DirectoryContentException(workspacemanager_exception.NEW_PATH_EQ_OLD_PATH, path)
         if path.exists():
-            raise WorkspaceManagerException(workspacemanager_exception.INVALID_PATH, path)
+            raise DirectoryContentException(workspacemanager_exception.INVALID_PATH, path)
         _rename(self.filesystem_path, path)
 
     def _move(self, path: str):
@@ -505,16 +505,16 @@ class Directory(BaseWorkspace, AuthCovered):
         for item in self._recursive_iterdir():
             item.can_update()  # Will raise an error if not
 
-        _copy(self.filesystem_path, target.filesystem_path)
+        copy(self.filesystem_path, target.filesystem_path)
         self._delete_directory()
         self.path = str(Path(path) / self.title)
 
     @check_authorization(action='workspace.delete')
     def delete(self):
         if not self.filesystem_path.exists():
-            raise WorkspaceManagerException(workspacemanager_exception.NO_DIR, self.filesystem_path)
+            raise DirectoryContentException(workspacemanager_exception.NO_DIR, self.filesystem_path)
         if self.manager.final_path == self.filesystem_path:
-            raise WorkspaceManagerException(workspacemanager_exception.DELETING_ROOT, self.filesystem_path)
+            raise DirectoryContentException(workspacemanager_exception.DELETING_ROOT, self.filesystem_path)
 
         # Check if we allowed to delete all the content and gather auth_records ids to be deleted
         auth_record_ids = [self.id]

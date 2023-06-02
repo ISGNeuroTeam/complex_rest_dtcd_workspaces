@@ -1,4 +1,4 @@
-from dtcd_workspaces.workspaces.filesystem_workspaces import Workspace, Directory, WorkspaceManagerException
+from dtcd_workspaces.workspaces.filesystem_workspaces import Workspace, Directory, DirectoryContentException
 from dtcd_workspaces.workspaces import utils, workspacemanager_exception
 from rest_auth.authorization import check_authorization
 from typing import List, Dict, Union
@@ -16,11 +16,11 @@ class TWorkspace(Workspace):
         target = TDirectory(uid=self.id, title=self.title, path=utils.encode_name(path)).accessed_by(user)
         target.can_create()
         if not target.filesystem_path.exists():
-            raise WorkspaceManagerException(workspacemanager_exception.INVALID_PATH, path)
+            raise DirectoryContentException(workspacemanager_exception.INVALID_PATH, path)
         if target.filesystem_path == self.filesystem_path.parent:
-            raise WorkspaceManagerException(workspacemanager_exception.NEW_PATH_EQ_OLD_PATH, path)
+            raise DirectoryContentException(workspacemanager_exception.NEW_PATH_EQ_OLD_PATH, path)
         if self.filesystem_path in target.filesystem_path.parents:
-            raise WorkspaceManagerException(workspacemanager_exception.MOVING_DIR_INSIDE_ITSELF,
+            raise DirectoryContentException(workspacemanager_exception.MOVING_DIR_INSIDE_ITSELF,
                                             self.filesystem_path,
                                             target.filesystem_path)
 
@@ -59,11 +59,11 @@ class TDirectory(Directory):
         target = TDirectory(uid=self.id, title=self.title, path=utils.encode_name(path)).accessed_by(user)
         target.can_create()
         if not target.filesystem_path.exists():
-            raise WorkspaceManagerException(workspacemanager_exception.INVALID_PATH, path)
+            raise DirectoryContentException(workspacemanager_exception.INVALID_PATH, path)
         if target.filesystem_path == self.filesystem_path.parent:
-            raise WorkspaceManagerException(workspacemanager_exception.NEW_PATH_EQ_OLD_PATH, path)
+            raise DirectoryContentException(workspacemanager_exception.NEW_PATH_EQ_OLD_PATH, path)
         if self.filesystem_path in target.filesystem_path.parents:
-            raise WorkspaceManagerException(workspacemanager_exception.MOVING_DIR_INSIDE_ITSELF,
+            raise DirectoryContentException(workspacemanager_exception.MOVING_DIR_INSIDE_ITSELF,
                                             self.filesystem_path,
                                             target.filesystem_path)
 

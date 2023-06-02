@@ -5,8 +5,7 @@ import json
 from shutil import rmtree, copytree, copy2
 
 from dtcd_workspaces.settings import WORKSPACE_BASE_PATH, WORKSPACE_TMP_PATH
-from dtcd_workspaces.workspaces.workspacemanager_exception import WorkspaceManagerException
-from dtcd_workspaces.workspaces import workspacemanager_exception
+from dtcd_workspaces.workspaces.workspacemanager_exception import DirectoryContentException
 from pathlib import Path
 from typing import List
 
@@ -30,21 +29,21 @@ def _rename(f: Path, t: Path):
     try:
         os.rename(f, t)
     except IOError:
-        raise WorkspaceManagerException(workspacemanager_exception.IO_ERROR, f)
+        raise DirectoryContentException(DirectoryContentException.IO_ERROR, f)
 
 
-def _remove(f: Path):
+def remove(f: Path):
     try:
         rmtree(f) if f.is_dir() else f.unlink()
     except IOError:
-        raise WorkspaceManagerException(workspacemanager_exception.IO_ERROR, f)
+        raise DirectoryContentException(DirectoryContentException.IO_ERROR, f)
 
 
-def _copy(f: Path, t: Path):
+def copy(f: Path, t: Path):
     try:
         copytree(f, t / f.name) if f.is_dir() else copy2(f, t)  # copy2 preserves meta data
     except IOError as e:
-        raise WorkspaceManagerException(workspacemanager_exception.IO_ERROR, f)
+        raise DirectoryContentException(DirectoryContentException.IO_ERROR, f)
 
 
 def _is_uuid4(text: str):
@@ -88,9 +87,9 @@ class FilesystemWorkspaceManager:
 
         for token in tokens[:len(tokens) - 1]:  # security
             if token == '..' or token == '':
-                raise WorkspaceManagerException(workspacemanager_exception.PATH_WITH_DOTS, path)
+                raise DirectoryContentException(DirectoryContentException.PATH_WITH_DOTS, path)
         if tokens[-1] == '..':
-            raise WorkspaceManagerException(workspacemanager_exception.PATH_WITH_DOTS, path)
+            raise DirectoryContentException(DirectoryContentException.PATH_WITH_DOTS, path)
 
         return tokens
 
@@ -110,7 +109,7 @@ class FilesystemWorkspaceManager:
             temp_file.write_text(json.dumps(data))
             temp_file.rename(path)  # atomic operation
         except IOError:
-            raise WorkspaceManagerException(workspacemanager_exception.IO_ERROR, path)
+            raise DirectoryContentException(DirectoryContentException.IO_ERROR, path)
 
 
 manager = FilesystemWorkspaceManager(WORKSPACE_BASE_PATH, WORKSPACE_TMP_PATH)

@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from rest.test import TransactionTestCase
 from dtcd_workspaces.settings import WORKSPACE_BASE_PATH, WORKSPACE_TMP_PATH, DIR_META_NAME
-from dtcd_workspaces.workspaces.filesystem_workspaces import WorkspaceManagerException
+from dtcd_workspaces.workspaces.filesystem_workspaces import DirectoryContentException
 from dtcd_workspaces.workspaces.directory import Directory
 from dtcd_workspaces.workspaces.workspace import Workspace
 from dtcd_workspaces.workspaces.utils import encode_name

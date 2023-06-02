@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from rest.test import TransactionTestCase
 from dtcd_workspaces.settings import WORKSPACE_BASE_PATH, WORKSPACE_TMP_PATH, DIR_META_NAME
-from dtcd_workspaces.workspaces.filesystem_workspaces import WorkspaceManagerException
+from dtcd_workspaces.workspaces.filesystem_workspaces import DirectoryContentException
 from dtcd_workspaces.workspaces.directory import Directory
 from dtcd_workspaces.workspaces.utils import encode_name
 
@@ -19,6 +19,24 @@ class TestDirs(TransactionTestCase):
     def tearDown(self) -> None:
         shutil.rmtree(WORKSPACE_TMP_PATH)
         shutil.rmtree(WORKSPACE_BASE_PATH)
+
+    def _create_test_directory(self, directory_path: str, dir_meta: dict = None):
+        paths_parts = directory_path.split('/')
+        cur_path = paths_parts.pop(0)
+
+        for path_part in paths_parts:
+            directory = Directory(cur_path)
+            directory.meta = {
+                'some_meta': {
+                    'path': cur_path
+                }
+            }
+            directory.save()
+            cur_path = cur_path + '/' + path_part
+
+        directory = Directory(cur_path)
+        directory.meta = dir_meta
+        directory.save()
 
     def test_create_directory(self):
         test_directory_name = 'test'
@@ -38,4 +56,17 @@ class TestDirs(TransactionTestCase):
         directory = Directory.get(test_directory_name)
         self.assertDictEqual(meta_info, directory.meta)
 
+    def test_move_directory(self):
+        meta_info = {
+            'some_meta': {
+                'some_meta': 34,
+            },
+            'info': 'test_moving'
+        }
+        self._create_test_directory('path1/path2/path3', meta_info)
+        self._create_test_directory('path3/path4')
+        directory = Directory.get('path1/path2/path3')
+        directory.move('path3/path4')
 
+        directory = Directory.get('path3/path4/path3')
+        self.assertDictEqual(directory.meta, meta_info)

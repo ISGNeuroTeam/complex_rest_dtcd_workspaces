@@ -1,5 +1,5 @@
 from .directory_content import DirectoryContent
-from .workspacemanager_exception import WorkspaceManagerException
+from .workspacemanager_exception import DirectoryContentException
 
 
 class Workspace(DirectoryContent):
@@ -13,7 +13,7 @@ class Workspace(DirectoryContent):
     def save(self):
         parent_dir_path = self.absolute_filesystem_path.parent
         if not parent_dir_path.exists():
-            raise WorkspaceManagerException(WorkspaceManagerException.NO_DIR, str(parent_dir_path))
+            raise DirectoryContentException(DirectoryContentException.NO_DIR, str(parent_dir_path))
 
         self._write_attributes_to_json_file(self.absolute_filesystem_path)
 
@@ -22,7 +22,7 @@ class Workspace(DirectoryContent):
         loads attributes from filename
         """
         if not self.absolute_filesystem_path.exists():
-            raise WorkspaceManagerException(WorkspaceManagerException.NO_WORKSPACE, str(self.absolute_filesystem_path))
+            raise DirectoryContentException(DirectoryContentException.DOES_NOT_EXIST)
 
         self._read_attributes_from_json_file(self.absolute_filesystem_path)
 
