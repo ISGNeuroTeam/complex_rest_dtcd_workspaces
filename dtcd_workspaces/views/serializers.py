@@ -24,6 +24,7 @@ class DirectorySerializer(DirectoryContentSerializer):
     def update(self, instance, validated_data):
         instance.meta = validated_data.get('meta', instance.meta)
         instance.save()
+        return instance
 
 
 class WorkspaceSerializer(DirectoryContentSerializer):
