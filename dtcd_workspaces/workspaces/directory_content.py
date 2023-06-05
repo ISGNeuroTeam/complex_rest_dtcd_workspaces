@@ -18,9 +18,25 @@ class DirectoryContent:
     class DoesNotExist(Exception):
         pass
 
+    # child classes must be registered
+    _child_classes = []
+
+    @staticmethod
+    def register_child_class(child_cls):
+        DirectoryContent._child_classes.append(child_cls)
+
+    # attributes list for json file
+    # may be reassigned in child classes
     saved_to_file_attributes = [
         'creation_time', 'modification_time', 'title', 'meta'
     ]
+
+    @classmethod
+    def is_path_for_cls(cls, path: str) -> bool:
+        """
+        determines whether the path belongs to an object of the child class
+        """
+        raise NotImplementedError
 
     def __init__(self, path: str):
         """
@@ -45,8 +61,8 @@ class DirectoryContent:
     def relative_filesystem_path(self) -> str:
         return self._get_relative_filesystem_path(self.path)
 
-    @staticmethod
-    def _get_absolute_filesystem_path(path: str) -> str:
+    @classmethod
+    def _get_absolute_filesystem_path(cls, path: str) -> str:
         return str(Path(WORKSPACE_BASE_PATH) / DirectoryContent._get_relative_filesystem_path(path))
 
     def _write_attributes_to_json_file(self, absolute_file_path: Path):
@@ -71,6 +87,12 @@ class DirectoryContent:
 
     @staticmethod
     def _write_file(data: dict, absolute_filesystem_path: Path):
+        """
+        Writes dictionary to json file
+        Args:
+            data (dict): dictionary to write
+            absolute_filesystem_path (Path): path to json file
+        """
         temp_file = Path(WORKSPACE_TMP_PATH) / Path(f'temp_{str(uuid.uuid4())}')
         try:
             temp_file.write_text(json.dumps(data))
@@ -78,15 +100,14 @@ class DirectoryContent:
         except IOError:
             raise DirectoryContentException(DirectoryContentException.IO_ERROR, absolute_filesystem_path)
 
-
     @staticmethod
-    def _get_relative_filesystem_path(human_readable_path: str) -> str:
+    def _get_relative_filesystem_path(relative_human_readable_path: str) -> str:
         """
         Returns filesystem path
         """
         return os.sep.join(map(
             lambda path_part: encode_name(path_part),
-            human_readable_path.split('/')  # no os.sep because it's parameter
+            relative_human_readable_path.split('/')  # no os.sep because it's parameter
         ))
 
     @staticmethod
@@ -103,12 +124,11 @@ class DirectoryContent:
 
     @staticmethod
     def _validate_path(path):
-        tokens = path.split(os.sep)
-
+        tokens = path.split('/')
         for token in tokens[:len(tokens) - 1]:  # security
-            if token == '..' or token == '':
+            if token == '..' or token == '' or token == DIR_META_NAME:
                 raise DirectoryContentException(DirectoryContentException.PATH_WITH_DOTS, path)
-        if tokens[-1] == '..':
+        if tokens[-1] == '..' or tokens[-1] == DIR_META_NAME:
             raise DirectoryContentException(DirectoryContentException.PATH_WITH_DOTS, path)
         return path
 
@@ -130,7 +150,9 @@ class DirectoryContent:
         """
         Load object from filesystem storage
         """
-        raise NotImplementedError
+        for child_cls in DirectoryContent._child_classes:
+            if child_cls.is_path_for_cls(path):
+                return child_cls.get(path)
 
     def move(self, directory_path: str):
         """

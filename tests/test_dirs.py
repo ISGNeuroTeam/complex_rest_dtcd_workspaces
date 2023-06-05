@@ -8,6 +8,7 @@ from rest.test import TransactionTestCase
 from dtcd_workspaces.settings import WORKSPACE_BASE_PATH, WORKSPACE_TMP_PATH, DIR_META_NAME
 from dtcd_workspaces.workspaces.filesystem_workspaces import DirectoryContentException
 from dtcd_workspaces.workspaces.directory import Directory
+from dtcd_workspaces.workspaces.workspace import Workspace
 from dtcd_workspaces.workspaces.utils import encode_name
 
 
@@ -70,3 +71,28 @@ class TestDirs(TransactionTestCase):
 
         directory = Directory.get('path3/path4/path3')
         self.assertDictEqual(directory.meta, meta_info)
+
+    def test_list(self):
+        parent_dir = Directory('path1')
+        parent_dir.save()
+        child_dir1 = Directory('path1/c_path1')
+        child_dir1.save()
+        child_dir2 = Directory('path1/c_path2')
+        child_dir2.save()
+        workspace = Workspace('path1/workspace1')
+        workspace.save()
+        workspace2 = Workspace('path1/workspace2')
+        workspace2.save()
+        dir_contents = parent_dir.list()
+        self.assertEqual(len(dir_contents), 4)
+        dirs = list(filter(
+            lambda x: isinstance(x, Directory),
+            dir_contents
+        ))
+        workspaces = list(filter(
+            lambda x: isinstance(x, Workspace),
+            dir_contents
+        ))
+        self.assertEqual(len(dirs), 2)
+        self.assertEqual(len(workspaces), 2)
+

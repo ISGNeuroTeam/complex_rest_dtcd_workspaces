@@ -11,7 +11,15 @@ from ..settings import DIR_META_NAME, WORKSPACE_BASE_PATH
 class Directory(DirectoryContent):
     def __init__(self, path: str):
         super().__init__(path)
-        self.content = None
+
+    @classmethod
+    def is_path_for_cls(cls, path: str) -> bool:
+        """
+        Returns True id path identify a directory
+        """
+        if Path(cls._get_absolute_filesystem_path(path)).is_dir():
+            return True
+        return False
 
     @property
     def dir_meta_path(self):
@@ -21,7 +29,17 @@ class Directory(DirectoryContent):
         """
         Returns directory content
         """
-        pass
+        directory_content_list = []
+        for item in self.absolute_filesystem_path.iterdir():
+            if not item.name == DIR_META_NAME:
+                directory_content_list.append(
+                    DirectoryContent.get(
+                        self._get_relative_humanreadable_path(
+                            str(item.relative_to(WORKSPACE_BASE_PATH))
+                        )
+                    )
+                 )
+        return directory_content_list
 
     def load(self):
         """
@@ -44,6 +62,8 @@ class Directory(DirectoryContent):
         self.absolute_filesystem_path.mkdir(exist_ok=True)
         self._write_attributes_to_json_file(self.dir_meta_path)
 
+
+DirectoryContent.register_child_class(Directory)
 
 
 
