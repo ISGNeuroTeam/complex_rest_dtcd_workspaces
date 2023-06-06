@@ -67,9 +67,9 @@ class TestDirs(TransactionTestCase):
         self._create_test_directory('path1/path2/path3', meta_info)
         self._create_test_directory('path3/path4')
         directory = Directory.get('path1/path2/path3')
-        directory.move('path3/path4')
+        directory.move('path3/path4/path234')
 
-        directory = Directory.get('path3/path4/path3')
+        directory = Directory.get('path3/path4/path234')
         self.assertDictEqual(directory.meta, meta_info)
 
     def test_list(self):

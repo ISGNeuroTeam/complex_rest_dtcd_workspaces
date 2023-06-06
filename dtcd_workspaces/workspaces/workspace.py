@@ -5,7 +5,7 @@ from .workspacemanager_exception import DirectoryContentException
 
 class Workspace(DirectoryContent):
     saved_to_file_attributes = [
-        'creation_time', 'modification_time', 'title', 'meta', 'content'
+        'creation_time', 'modification_time', 'meta', 'content'
     ]
 
     def __init__(self, path: str):

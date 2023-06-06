@@ -46,18 +46,18 @@ class DirectoryView(APIView):
                 directory = Directory.get(path)
             except DirectoryContentException.DOES_NOT_EXIST as err:
                 return ErrorResponse(http_status=status.HTTP_404_NOT_FOUND, error_message=str(err))
-            directory_serializer = DirectorySerializer(directory, data=request.POST)
+            directory_serializer = DirectorySerializer(directory, data=request.POST, partial=True)
             directory_serializer.save()
             return Response(data=DirectorySerializer(directory).data, status=status.HTTP_200_OK)
         if action == 'move':
-            new_directory_path = request.POST.get('directory', None)
-            if new_directory_path is None:
+            new_path = request.POST.get('new_path', None)
+            if new_path is None:
                 return ErrorResponse(
                     http_status=status.HTTP_400_BAD_REQUEST, error_message='directory required for action update'
                 )
             try:
                 directory = Directory.get(path)
-                directory.move(new_directory_path)
+                directory.move(new_path)
             except DirectoryContentException as err:
                 return ErrorResponse(http_status=status.HTTP_400_BAD_REQUEST, error_message=str(err))
             return Response(data=DirectorySerializer(directory), status=status.HTTP_200_OK)

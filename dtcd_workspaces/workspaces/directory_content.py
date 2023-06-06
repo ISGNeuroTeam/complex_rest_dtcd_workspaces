@@ -28,7 +28,7 @@ class DirectoryContent:
     # attributes list for json file
     # may be reassigned in child classes
     saved_to_file_attributes = [
-        'creation_time', 'modification_time', 'title', 'meta'
+        'creation_time', 'modification_time', 'meta'
     ]
 
     @classmethod
@@ -46,12 +46,11 @@ class DirectoryContent:
         self.path: str = self._validate_path(path)
         self.creation_time: float = None
         self.modification_time: float = None
-        self.title: str = self._get_title_from_path(path)
         self.meta: dict = None
 
-    @staticmethod
-    def _get_title_from_path(path: str) -> str:
-        return Path(path).name
+    @property
+    def title(self) -> str:
+        return Path(self.path).name
 
     @property
     def absolute_filesystem_path(self) -> Path:
@@ -113,7 +112,7 @@ class DirectoryContent:
     @staticmethod
     def _get_relative_humanreadable_path(relative_filesystem_path: str) -> str:
         """
-        Returns humanreadable path
+        Returns humanreadable path relative to root workspace directory
         """
         return '/'.join(
             map(
@@ -154,26 +153,29 @@ class DirectoryContent:
             if child_cls.is_path_for_cls(path):
                 return child_cls.get(path)
 
-    def move(self, directory_path: str):
+    def move(self, new_path: str):
         """
         Moves all content to new path
         Args:
-            directory_path (str): relative path to directory where to put content
+            new_path (str): new relative path
         """
-        new_path = f'{directory_path}/{self.title}'
 
         new_absolute_path = Path(self._get_absolute_filesystem_path(new_path))
-        directory_absolute_path = Path(self._get_absolute_filesystem_path(directory_path))
+        new_title = new_path.split('/')[-1]
+        new_directory_path = '/'.join(new_path.split('/')[:-1])
+        directory_absolute_path = Path(self._get_absolute_filesystem_path(new_directory_path))
 
         if not directory_absolute_path.exists():
-            raise DirectoryContentException(DirectoryContentException.INVALID_PATH, directory_path)
+            raise DirectoryContentException(DirectoryContentException.INVALID_PATH, new_directory_path)
         if new_path == self.path:
-            raise DirectoryContentException(DirectoryContentException.NEW_PATH_EQ_OLD_PATH, directory_path)
+            raise DirectoryContentException(DirectoryContentException.NEW_PATH_EQ_OLD_PATH, new_directory_path)
         if self.absolute_filesystem_path in new_absolute_path.parents:
-            raise DirectoryContentException(DirectoryContentException.MOVING_DIR_INSIDE_ITSELF, self.path, directory_path)
+            raise DirectoryContentException(DirectoryContentException.MOVING_DIR_INSIDE_ITSELF, self.path, new_directory_path)
 
-        copy(self.absolute_filesystem_path, directory_absolute_path)
-        remove(self.absolute_filesystem_path)
+        try:
+            self.absolute_filesystem_path.rename(new_absolute_path)
+        except IOError as err:
+            raise DirectoryContentException(DirectoryContentException.IO_ERROR, str(err))
 
         self.path = new_path
 
