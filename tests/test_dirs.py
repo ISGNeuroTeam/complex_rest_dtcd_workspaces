@@ -6,16 +6,21 @@ import os
 from pathlib import Path
 from rest.test import TransactionTestCase
 from dtcd_workspaces.settings import WORKSPACE_BASE_PATH, WORKSPACE_TMP_PATH, DIR_META_NAME
-from dtcd_workspaces.workspaces.filesystem_workspaces import DirectoryContentException
 from dtcd_workspaces.workspaces.directory import Directory
 from dtcd_workspaces.workspaces.workspace import Workspace
 from dtcd_workspaces.workspaces.utils import encode_name
+from dtcd_workspaces.workspaces.workspace import DirectoryContentException
 
 
 class TestDirs(TransactionTestCase):
     def setUp(self):
         Path(WORKSPACE_BASE_PATH).mkdir(exist_ok=True, parents=True)
         Path(WORKSPACE_TMP_PATH).mkdir(exist_ok=True, parents=True)
+        (Path(WORKSPACE_BASE_PATH) / DIR_META_NAME).write_text(
+            json.dumps({"meta": ""})
+        )
+        root_dir = Directory.get('')
+        root_dir.save()
 
     def tearDown(self) -> None:
         shutil.rmtree(WORKSPACE_TMP_PATH)
@@ -95,4 +100,43 @@ class TestDirs(TransactionTestCase):
         ))
         self.assertEqual(len(dirs), 2)
         self.assertEqual(len(workspaces), 2)
+
+    def test_list_in_root(self):
+        root_dir = Directory.get('')
+        root_dir.meta = {
+            'text': "root_dir_meta"
+        }
+        root_dir.save()
+
+        dir1 = Directory('path1')
+        dir1.save()
+
+        dir2 = Directory('path2')
+        dir2.save()
+
+        workspace = Workspace('workspace_in_root_dir')
+        workspace.save()
+
+        dir_contents = root_dir.list()
+        self.assertEqual(len(dir_contents), 3)
+
+    def test_rename_dir(self):
+        directory = Directory('test')
+        meta = {
+            'name': 'test_rename'
+        }
+        directory.meta = meta
+        directory.save()
+
+        directory.move('new_name_test')
+        directory = Directory.get('new_name_test')
+        self.assertDictEqual(directory.meta, meta)
+
+    def test_dir_exist(self):
+        test_dir = Directory('test')
+        test_dir.save()
+
+        with self.assertRaises(DirectoryContentException):
+            test_dir = Directory('test')
+            test_dir.save()
 

@@ -26,6 +26,7 @@ class DirectoryContentException(Exception):
     NEW_TITLE_OR_PATH_NOT_PROVIDED = 24
     IS_ROOT = 25
     DOES_NOT_EXIST = 26
+    PATH_EXISTS = 27
 
     def __init__(self, problem, *args):
         msg = 'no message'
@@ -81,4 +82,6 @@ class DirectoryContentException(Exception):
             msg = f'root directory'
         elif problem == DirectoryContentException.DOES_NOT_EXIST:
             msg = f'Path {args[0]} does not exist'
+        elif problem == DirectoryContentException.PATH_EXISTS:
+            msg = f'Path {args[0]} already exists'
         super().__init__(msg)

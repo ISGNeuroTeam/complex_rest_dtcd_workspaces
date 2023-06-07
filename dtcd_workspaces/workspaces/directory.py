@@ -3,14 +3,14 @@ import json
 from typing import List
 
 from pathlib import Path
-from .workspacemanager_exception import DirectoryContentException
+from .directorycontent_exception import DirectoryContentException
 from .directory_content import DirectoryContent
 from ..settings import DIR_META_NAME, WORKSPACE_BASE_PATH
 
 
 class Directory(DirectoryContent):
-    def __init__(self, path: str):
-        super().__init__(path)
+    def __init__(self, path: str, initialized_from_inside_class=False):
+        super().__init__(path, initialized_from_inside_class)
 
     @classmethod
     def is_path_for_cls(cls, path: str) -> bool:
@@ -51,7 +51,7 @@ class Directory(DirectoryContent):
 
     @classmethod
     def get(cls, path: str) -> 'Directory':
-        directory = Directory(path)
+        directory = Directory(path, initialized_from_inside_class=True)
         directory.load()
         return directory
 

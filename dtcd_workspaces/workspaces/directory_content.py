@@ -7,7 +7,7 @@ import datetime
 from typing import List
 from pathlib import Path
 
-from dtcd_workspaces.workspaces.workspacemanager_exception import DirectoryContentException
+from dtcd_workspaces.workspaces.directorycontent_exception import DirectoryContentException
 from dtcd_workspaces.workspaces.utils import decode_name, encode_name
 
 from dtcd_workspaces.settings import WORKSPACE_BASE_PATH, WORKSPACE_TMP_PATH, DIR_META_NAME
@@ -15,9 +15,6 @@ from dtcd_workspaces.workspaces.utils import encode_name, decode_name, copy, rem
 
 
 class DirectoryContent:
-    class DoesNotExist(Exception):
-        pass
-
     # child classes must be registered
     _child_classes = []
 
@@ -38,7 +35,7 @@ class DirectoryContent:
         """
         raise NotImplementedError
 
-    def __init__(self, path: str):
+    def __init__(self, path: str, initialized_from_inside_class=False):
         """
         Args:
             path (str): Human readable relative path
@@ -47,6 +44,10 @@ class DirectoryContent:
         self.creation_time: float = None
         self.modification_time: float = None
         self.meta: dict = None
+
+        # you should use get method to get existing directory content
+        if not initialized_from_inside_class and self.absolute_filesystem_path.exists():
+            raise DirectoryContentException(DirectoryContentException.PATH_EXISTS, path)
 
     @property
     def title(self) -> str:
@@ -82,7 +83,7 @@ class DirectoryContent:
         with open(absolute_file_path, 'r', encoding='UTF-8') as f:
             dct = json.load(f)
             for attr in self.saved_to_file_attributes:
-                setattr(self, attr, dct[attr])
+                setattr(self, attr, dct.get(attr))
 
     @staticmethod
     def _write_file(data: dict, absolute_filesystem_path: Path):

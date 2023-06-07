@@ -5,7 +5,7 @@ import json
 from shutil import rmtree, copytree, copy2
 
 from dtcd_workspaces.settings import WORKSPACE_BASE_PATH, WORKSPACE_TMP_PATH
-from dtcd_workspaces.workspaces.workspacemanager_exception import DirectoryContentException
+from dtcd_workspaces.workspaces.directorycontent_exception import DirectoryContentException
 from pathlib import Path
 from typing import List
 

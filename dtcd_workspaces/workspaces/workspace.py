@@ -1,6 +1,6 @@
 from pathlib import Path
 from .directory_content import DirectoryContent
-from .workspacemanager_exception import DirectoryContentException
+from .directorycontent_exception import DirectoryContentException
 
 
 class Workspace(DirectoryContent):
@@ -8,8 +8,8 @@ class Workspace(DirectoryContent):
         'creation_time', 'modification_time', 'meta', 'content'
     ]
 
-    def __init__(self, path: str):
-        super().__init__(path)
+    def __init__(self, path: str, initialized_from_inside_class=False):
+        super().__init__(path, initialized_from_inside_class)
         self.content = None
 
     @classmethod
@@ -43,7 +43,7 @@ class Workspace(DirectoryContent):
 
     @classmethod
     def get(cls, path: str):
-        workspace = Workspace(path)
+        workspace = Workspace(path, initialized_from_inside_class=True)
         workspace.load()
         return workspace
 

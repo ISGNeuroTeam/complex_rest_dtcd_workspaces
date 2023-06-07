@@ -3,8 +3,7 @@ from rest_framework.serializers import ValidationError
 from rest.views import APIView
 from rest.response import Response, status, ErrorResponse
 from rest.permissions import IsAuthenticated
-from rest_auth.authentication import User
-from dtcd_workspaces.workspaces.workspacemanager_exception import DirectoryContentException
+from dtcd_workspaces.workspaces.directorycontent_exception import DirectoryContentException
 import logging
 
 logger = logging.getLogger('dtcd_workspaces')
@@ -36,12 +35,18 @@ class DirectoryContentView(APIView):
         action = request.POST.get('action', 'create')
         try:
             if action == 'create':
+                try:
+                    existing_dir = self.directory_content_class.get(path)
+                    return ErrorResponse(http_status=status.HTTP_400_BAD_REQUEST, error_message='Path already exist')
+                except DirectoryContentException as err:  # if directory not exists than ok
+                    pass
+
                 directory_content_serializer = self.serializer_class(data=request.POST)
                 try:
                     directory_content_serializer.is_valid()
                 except ValidationError as err:
                     return ErrorResponse(http_status=status.HTTP_400_BAD_REQUEST, error_message=str(err))
-                new_dir = directory_content_serializer.create()
+                new_dir = directory_content_serializer.save()
                 return Response(data=self.serializer_class(new_dir).data, status=status.HTTP_200_OK)
             elif action == 'update':
                 directory_content = self.directory_content_class.get(path)
