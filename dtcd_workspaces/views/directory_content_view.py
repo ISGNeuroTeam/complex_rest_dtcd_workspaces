@@ -27,12 +27,12 @@ class DirectoryContentView(APIView):
         return Response(data=self.serializer_class(directory_content).data, status=status.HTTP_200_OK)
 
     def post(self, request, **kwargs):
-        path = request.POST.get('path', None)
+        path = request.GET.get('path', None)
         if path is None:
             return ErrorResponse(http_status=status.HTTP_400_BAD_REQUEST, error_message='path query parameter need')
 
         # actions: create, update, move, delete
-        action = request.POST.get('action', 'create')
+        action = request.GET.get('action', 'create')
         try:
             if action == 'create':
                 try:
@@ -40,10 +40,13 @@ class DirectoryContentView(APIView):
                     return ErrorResponse(http_status=status.HTTP_400_BAD_REQUEST, error_message='Path already exist')
                 except DirectoryContentException as err:  # if directory not exists than ok
                     pass
-
-                directory_content_serializer = self.serializer_class(data=request.POST)
+                directory_dct = dict(request.data)
+                directory_dct.update({'path': path})
+                directory_content_serializer = self.serializer_class(
+                    data=directory_dct
+                )
                 try:
-                    directory_content_serializer.is_valid()
+                    directory_content_serializer.is_valid(raise_exception=True)
                 except ValidationError as err:
                     return ErrorResponse(http_status=status.HTTP_400_BAD_REQUEST, error_message=str(err))
                 new_dir = directory_content_serializer.save()
