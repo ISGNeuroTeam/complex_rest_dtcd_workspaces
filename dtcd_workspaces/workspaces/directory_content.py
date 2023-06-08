@@ -181,7 +181,7 @@ class DirectoryContent:
         self.path = new_path
 
     def delete(self):
-        pass
+        remove(self.absolute_filesystem_path)
 
 
 

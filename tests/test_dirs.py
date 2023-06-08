@@ -17,7 +17,7 @@ class TestDirs(TransactionTestCase):
         Path(WORKSPACE_BASE_PATH).mkdir(exist_ok=True, parents=True)
         Path(WORKSPACE_TMP_PATH).mkdir(exist_ok=True, parents=True)
         (Path(WORKSPACE_BASE_PATH) / DIR_META_NAME).write_text(
-            json.dumps({"meta": ""})
+            json.dumps({"meta": {'root_meta': 'some_root_meta'}})
         )
         root_dir = Directory.get('')
         root_dir.save()

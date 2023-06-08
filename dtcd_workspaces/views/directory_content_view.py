@@ -45,16 +45,26 @@ class DirectoryContentView(APIView):
                 directory_content_serializer = self.serializer_class(
                     data=directory_dct
                 )
-                try:
-                    directory_content_serializer.is_valid(raise_exception=True)
-                except ValidationError as err:
-                    return ErrorResponse(http_status=status.HTTP_400_BAD_REQUEST, error_message=str(err))
-                new_dir = directory_content_serializer.save()
+                if directory_content_serializer.is_valid():
+                    new_dir = directory_content_serializer.save()
+                else:
+                    return ErrorResponse(
+                        data=directory_content_serializer.errors,
+                        http_status=status.HTTP_400_BAD_REQUEST,
+                        error_message='Invalid data'
+                    )
                 return Response(data=self.serializer_class(new_dir).data, status=status.HTTP_200_OK)
             elif action == 'update':
                 directory_content = self.directory_content_class.get(path)
-                directory_content_serializer = self.serializer_class(directory_content, data=request.POST, partial=True)
-                directory_content_serializer.save()
+                directory_content_serializer = self.serializer_class(directory_content, data=request.data, partial=True)
+                if directory_content_serializer.is_valid():
+                    directory_content_serializer.save()
+                else:
+                    return ErrorResponse(
+                        data=directory_content_serializer.errors,
+                        http_status=status.HTTP_400_BAD_REQUEST,
+                        error_message='Invalid data'
+                    )
                 return Response(data=self.serializer_class(directory_content).data, status=status.HTTP_200_OK)
             elif action == 'move':
                 new_path = request.POST.get('new_path', None)
@@ -64,15 +74,17 @@ class DirectoryContentView(APIView):
                     )
                 directory_content = self.directory_content_class.get(path)
                 directory_content.move(new_path)
-                return Response(data=self.serializer_class(directory_content), status=status.HTTP_200_OK)
+                return Response(data=self.serializer_class(directory_content).data, status=status.HTTP_200_OK)
             elif action == 'delete':
                 directory_content = self.directory_content_class.get(path)
                 directory_content.delete()
+                return Response(status=status.HTTP_200_OK)
             else:
                 return ErrorResponse(
                     http_status=status.HTTP_400_BAD_REQUEST,
-                    error_message='Available actions are create, update, move, delete'
+                    error_message='Action must be passed in query string, \
+                    Available actions are: create, update, move, delete'
                 )
         except DirectoryContentException as err:
-            return ErrorResponse(http_status=status.HTTP_404_NOT_FOUND, error_message=str(err))
+            return ErrorResponse(http_status=status.HTTP_400_BAD_REQUEST, error_message=str(err))
 
