@@ -35,11 +35,14 @@ class WorkspaceSerializer(DirectoryContentSerializer):
         workspace.meta = validated_data['meta']
         workspace.content = validated_data['content']
         workspace.save()
+        return workspace
 
     def update(self, instance, validated_data):
         instance.meta = validated_data.get('meta', instance.meta)
         instance.content = validated_data.get('content', instance.content)
         instance.save()
+        return instance
+
 
 
 
