@@ -9,6 +9,7 @@ from rest.test import APIClient, TransactionTestCase as TestCase
 from rest_auth.models import User
 
 from dtcd_workspaces.workspaces.directory import Directory
+from dtcd_workspaces.workspaces.workspace import Workspace
 from dtcd_workspaces.workspaces.directorycontent_exception import DirectoryContentException
 from dtcd_workspaces.settings import WORKSPACE_BASE_PATH, WORKSPACE_TMP_PATH, DIR_META_NAME
 
@@ -119,6 +120,33 @@ class DirectoryApiTest(TestCase):
         self.assertEqual(response.status_code, 200)
         with self.assertRaises(DirectoryContentException):  # now not exist
             directory = Directory.get('test1')
+
+    def test_list_directory(self):
+        dir1 = Directory('test1')
+        dir1.save()
+        dir_test = Directory('test1/dir_test')
+        dir_test.save()
+        child_dir1 = Directory('test1/dir_test/child_dir1')
+        child_dir1.save()
+        child_dir2 = Directory('test1/dir_test/child_dir2')
+        child_dir2.save()
+        child_dir3 = Directory('test1/dir_test/child_dir3')
+        child_dir3.save()
+        workspace = Workspace('test1/dir_test/workspace_test')
+        workspace.save()
+        workspace = Workspace('test1/dir_test/workspace_test2')
+        workspace.save()
+        response = self.client.get(
+            self.base_url + '/directory/?path=test1/dir_test&action=list'
+        )
+        workspaces = response.data['workspaces']
+        directories = response.data['directories']
+        self.assertEqual(len(workspaces), 2)
+        self.assertEqual(len(directories), 3)
+
+
+
+
 
 
 

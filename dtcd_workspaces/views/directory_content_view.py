@@ -22,18 +22,28 @@ class DirectoryContentView(APIView):
             'create': self._create,
             'update': self._update,
             'delete': self._delete,
-            'move': self._move
+            'move': self._move,
+            'get': self._get
         }
 
     def get(self, request, **kwargs):
-        path = request.GET['path']
+        path = request.GET.get('path', None)
+        if path is None:
+            return ErrorResponse(http_status=status.HTTP_400_BAD_REQUEST, error_message='path query parameter need')
+
+        action = request.GET.get('action', 'get')
+
         try:
-            directory_content = self.directory_content_class.get(path)
+            try:
+                return self.action_handlers[action](path, request, **kwargs)
+            except KeyError as err:
+                return ErrorResponse(
+                    http_status=status.HTTP_400_BAD_REQUEST,
+                    error_message='Action must be passed in query string, \
+                        Available actions are: ' + ', '.join(self.action_handlers.keys())
+                )
         except DirectoryContentException as err:
-            return ErrorResponse(
-                http_status=status.HTTP_400_BAD_REQUEST, error_message=str(err)
-            )
-        return Response(data=self.serializer_class(directory_content).data, status=status.HTTP_200_OK)
+            return ErrorResponse(http_status=status.HTTP_400_BAD_REQUEST, error_message=str(err))
 
     def post(self, request, **kwargs):
         path = request.GET.get('path', None)
@@ -53,6 +63,15 @@ class DirectoryContentView(APIView):
                 )
         except DirectoryContentException as err:
             return ErrorResponse(http_status=status.HTTP_400_BAD_REQUEST, error_message=str(err))
+
+    def _get(self, path, request, **kwargs):
+        try:
+            directory_content = self.directory_content_class.get(path)
+        except DirectoryContentException as err:
+            return ErrorResponse(
+                http_status=status.HTTP_400_BAD_REQUEST, error_message=str(err)
+            )
+        return Response(data=self.serializer_class(directory_content).data, status=status.HTTP_200_OK)
 
     def _create(self, path, request, **kwargs):
         try:
