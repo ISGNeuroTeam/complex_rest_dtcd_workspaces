@@ -7,7 +7,7 @@ from pathlib import Path
 from rest.test import APIClient, TransactionTestCase as TestCase
 
 from rest_auth.models import User
-
+from rest_auth.apps import on_ready_actions as rest_auth_on_ready_actions
 from dtcd_workspaces.workspaces.directory import Directory
 from dtcd_workspaces.workspaces.workspace import Workspace
 from dtcd_workspaces.workspaces.directorycontent_exception import DirectoryContentException
@@ -33,7 +33,7 @@ class WorkspaceApiTest(TestCase):
         return response.data['token']
 
     def setUp(self) -> None:
-
+        rest_auth_on_ready_actions()
         Path(WORKSPACE_BASE_PATH).mkdir(exist_ok=True, parents=True)
         Path(WORKSPACE_TMP_PATH).mkdir(exist_ok=True, parents=True)
         (Path(WORKSPACE_BASE_PATH) / DIR_META_NAME).write_text(

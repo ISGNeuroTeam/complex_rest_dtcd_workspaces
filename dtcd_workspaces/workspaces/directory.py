@@ -3,12 +3,15 @@ import json
 from typing import List
 
 from pathlib import Path
+from rest_auth.authorization import auth_covered_method, auth_covered_func
+
 from .directorycontent_exception import DirectoryContentException
 from .directory_content import DirectoryContent
 from ..settings import DIR_META_NAME, WORKSPACE_BASE_PATH
 
 
 class Directory(DirectoryContent):
+    @auth_covered_func(action_name='create')
     def __init__(self, path: str, initialized_from_inside_class=False):
         super().__init__(path, initialized_from_inside_class)
 
@@ -25,6 +28,7 @@ class Directory(DirectoryContent):
     def dir_meta_path(self):
         return Path(self.absolute_filesystem_path) / DIR_META_NAME
 
+    @auth_covered_method(action_name='read')
     def list(self) -> List[DirectoryContent]:
         """
         Returns directory content
@@ -41,6 +45,7 @@ class Directory(DirectoryContent):
                  )
         return directory_content_list
 
+    @auth_covered_method(action_name='read')
     def load(self):
         """
         Load attributes from meta filename
@@ -55,6 +60,7 @@ class Directory(DirectoryContent):
         directory.load()
         return directory
 
+    @auth_covered_method(action_name='update')
     def save(self):
         parent_dir_path = self.absolute_filesystem_path.parent
         if not parent_dir_path.exists():

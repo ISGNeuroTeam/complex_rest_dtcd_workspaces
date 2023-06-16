@@ -12,6 +12,12 @@ from dtcd_workspaces.workspaces.utils import decode_name, encode_name
 
 from dtcd_workspaces.settings import WORKSPACE_BASE_PATH, WORKSPACE_TMP_PATH, DIR_META_NAME
 from dtcd_workspaces.workspaces.utils import encode_name, decode_name, copy, remove
+from dtcd_workspaces.models import DirectoryContentKeychain
+
+from core.globals import global_vars
+from rest_auth.models.abc import IAuthCovered
+from rest_auth.models import User
+from rest_auth.authorization import auth_covered_method
 
 
 class DirectoryContent:
@@ -25,8 +31,46 @@ class DirectoryContent:
     # attributes list for json file
     # may be reassigned in child classes
     saved_to_file_attributes = [
-        'creation_time', 'modification_time', 'meta'
+        'creation_time', 'modification_time', 'meta', 'keychain_id', 'owner_guid'
     ]
+
+    # --------------role model api methods--------------------
+    keychain_model = DirectoryContentKeychain
+
+    @property
+    def auth_id(self):
+        return self.path
+
+    @property
+    def owner(self):
+        if self.owner_guid:
+            try:
+                return User.objects.get(guid=self.owner_guid)
+            except User.DoesNotExist:
+                return None
+        return None
+
+    @owner.setter
+    def owner(self, user: 'User'):
+        self.owner_guid = user.guid.hex
+
+    @property
+    def keychain(self):
+        if self.keychain_id:
+            try:
+                return DirectoryContentKeychain.objects.get(id=self.keychain_id)
+            except DirectoryContentKeychain.DoesNotExist:
+                return None
+        return None
+
+    @keychain.setter
+    def keychain(self, keychain: DirectoryContentKeychain):
+        self.keychain_id = keychain.id
+
+    @classmethod
+    def get_auth_object(cls, auth_id: str):
+        return cls.get(auth_id)
+    # --------------------------------------------------------
 
     @classmethod
     def is_path_for_cls(cls, path: str) -> bool:
@@ -44,6 +88,15 @@ class DirectoryContent:
         self.creation_time: float = None
         self.modification_time: float = None
         self.meta: dict = None
+
+        # when first creation owner is current user
+        current_user = global_vars.get_current_user()
+        if current_user:
+            self.owner_guid = current_user.guid.hex
+        else:
+            self.owner_guid = None
+
+        self.keychain_id = None
 
         # you should use get method to get existing directory content
         if not initialized_from_inside_class and self.absolute_filesystem_path.exists():
@@ -132,12 +185,14 @@ class DirectoryContent:
             raise DirectoryContentException(DirectoryContentException.PATH_WITH_DOTS, path)
         return path
 
+    @auth_covered_method(action_name='update')
     def save(self):
         """
         Saves object to filesystem storage
         """
         raise NotImplementedError
 
+    @auth_covered_method(action_name='read')
     def load(self):
         """
         load attributes from filesystem
@@ -154,6 +209,7 @@ class DirectoryContent:
             if child_cls.is_path_for_cls(path):
                 return child_cls.get(path)
 
+    @auth_covered_method(action_name='move')
     def move(self, new_path: str):
         """
         Moves all content to new path
@@ -180,6 +236,7 @@ class DirectoryContent:
 
         self.path = new_path
 
+    @auth_covered_method(action_name='delete')
     def delete(self):
         remove(self.absolute_filesystem_path)
 

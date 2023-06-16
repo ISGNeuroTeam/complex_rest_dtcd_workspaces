@@ -5,6 +5,7 @@ import time
 import os
 from pathlib import Path
 from rest.test import TransactionTestCase
+from rest_auth.apps import on_ready_actions as rest_auth_on_ready_actions
 from dtcd_workspaces.settings import WORKSPACE_BASE_PATH, WORKSPACE_TMP_PATH, DIR_META_NAME
 from dtcd_workspaces.workspaces.directory import Directory
 from dtcd_workspaces.workspaces.workspace import Workspace
@@ -42,6 +43,7 @@ class TestWorkspace(TransactionTestCase):
     }
 
     def setUp(self):
+        rest_auth_on_ready_actions()
         Path(WORKSPACE_BASE_PATH).mkdir(exist_ok=True, parents=True)
         Path(WORKSPACE_TMP_PATH).mkdir(exist_ok=True, parents=True)
 
