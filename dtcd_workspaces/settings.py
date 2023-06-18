@@ -28,7 +28,7 @@ ROLE_MODEL_ACTIONS = {
         'owner_applicability': True,  # default True
     },
 }
-
+ROLE_MODEL_AUTH_COVERED_CLASSES = ['dtcd_workspaces.workspaces.directory_content.DirectoryContent',]
 default_ini_config = {
     'logging': {
         'level': 'INFO'
