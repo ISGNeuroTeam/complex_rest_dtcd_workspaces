@@ -11,7 +11,6 @@ from ..settings import DIR_META_NAME, WORKSPACE_BASE_PATH
 
 
 class Directory(DirectoryContent):
-    @auth_covered_func(action_name='create')
     def __init__(self, path: str, initialized_from_inside_class=False):
         super().__init__(path, initialized_from_inside_class)
 
@@ -45,7 +44,6 @@ class Directory(DirectoryContent):
                  )
         return directory_content_list
 
-    @auth_covered_method(action_name='read')
     def load(self):
         """
         Load attributes from meta filename

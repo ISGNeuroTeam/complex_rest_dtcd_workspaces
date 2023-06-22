@@ -10,7 +10,6 @@ class Workspace(DirectoryContent):
         'content',
     ]
 
-    @auth_covered_func(action_name='create')
     def __init__(self, path: str, initialized_from_inside_class=False):
         super().__init__(path, initialized_from_inside_class)
         self.content = None
@@ -36,7 +35,6 @@ class Workspace(DirectoryContent):
 
         self._write_attributes_to_json_file(self.absolute_filesystem_path)
 
-    @auth_covered_method(action_name='read')
     def load(self):
         """
         loads attributes from filename

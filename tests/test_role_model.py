@@ -21,12 +21,14 @@ def create_test_users():
     ordinary_user1 = User(username='ordinary_user1')
     ordinary_user1.set_password('ordinary_user1')
     ordinary_user1.save()
+    ordinary_user2 = User(username='ordinary_user2')
+    ordinary_user2.set_password('ordinary_user2')
+    ordinary_user2.save()
 
 
 class RoleModelTest(APITestCase):
 
     def setUp(self) -> None:
-
         rest_auth_on_ready_actions()
 
         Path(WORKSPACE_BASE_PATH).mkdir(exist_ok=True, parents=True)
@@ -40,8 +42,6 @@ class RoleModelTest(APITestCase):
         self.auth_covered_object_class_import_str = 'dtcd_workspaces.workspaces.directory_content.DirectoryContent'
         self.base_url = '/dtcd_workspaces/v1'
         self.client = APIClient()
-
-
 
     def tearDown(self) -> None:
         shutil.rmtree(WORKSPACE_TMP_PATH)
@@ -57,11 +57,13 @@ class RoleModelTest(APITestCase):
         ordinary_user = User.objects.get(username='ordinary_user1')
         ordinary_user.groups.add(user_group)
         ordinary_user.save()
+
         user_role = Role(name='test_role')
         user_role.save()
         user_role.groups.add(user_group)
         security_zone = SecurityZone(name='root_zone')
         security_zone.save()
+
         # create keychain
         response = self.client.post(
             f'/auth/keychains/{self.auth_covered_object_class_import_str}/',
@@ -102,3 +104,108 @@ class RoleModelTest(APITestCase):
         self.login('ordinary_user1', 'ordinary_user1')
         response = self.client.get(self.base_url + f'/workspace/?path={workspace_path}')
         self.assertEqual(response.status_code, 403)
+
+    def test_create_denied(self):
+        user_group = Group(name='test_group')
+        user_group.save()
+        ordinary_user = User.objects.get(username='ordinary_user1')
+        ordinary_user.groups.add(user_group)
+        ordinary_user.save()
+
+        user_role = Role(name='test_role')
+        user_role.save()
+        user_role.groups.add(user_group)
+
+        self.login('ordinary_user1', 'ordinary_user1')
+
+        response = self.client.post(
+            self.base_url + '/directory/?path=test1', data={'meta': {'tset': 'test'}}, format='json'
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # add permission for access deny
+        action_create = Action.objects.get(plugin__name='dtcd_workspaces', name='create')
+
+        self.login('admin', 'admin')
+        response = self.client.post(
+                f'/auth/permits/{self.auth_covered_object_class_import_str}/',
+                {
+                    'access_rules': [
+                        {
+                            'action': action_create.id,
+                            'rule': False,
+                            'by_owner_only': False
+                        }, ],
+                    'roles': [user_role.id, ],
+                },
+                format='json'
+        )
+
+        self.login('ordinary_user1', 'ordinary_user1')
+
+        response = self.client.post(
+            self.base_url + '/directory/?path=test3', data={'meta': {'tset': 'test'}}, format='json'
+        )
+        print(response.data)
+        self.assertEqual(response.status_code, 403)
+
+    def test_read_only_by_owner(self):
+        user_group = Group(name='test_group')
+        user_group.save()
+        ordinary_user = User.objects.get(username='ordinary_user1')
+        ordinary_user.groups.add(user_group)
+        ordinary_user.save()
+
+        ordinary_user2 = User.objects.get(username='ordinary_user2')
+        ordinary_user2.groups.add(user_group)
+        ordinary_user2.save()
+
+        user_role = Role(name='test_role')
+        user_role.save()
+        user_role.groups.add(user_group)
+
+        self.login('ordinary_user1', 'ordinary_user1')
+        test_workspace_path = 'test1'
+        # create test workspace ordinary_user1 is owner
+        response = self.client.post(
+            self.base_url + f'/workspace/?path={test_workspace_path}',
+            data={'meta': {'tset': 'test'}, 'content': {'test_content': 'tset'}}, format='json'
+        )
+        workspace = Workspace.get(test_workspace_path)
+
+        self.assertEqual(response.status_code, 200)
+
+        # add permission for access deny
+        action_read = Action.objects.get(plugin__name='dtcd_workspaces', name='read')
+
+        self.login('admin', 'admin')
+
+        # read access have only not owner (ordinary user2)
+        response = self.client.post(
+                f'/auth/permits/{self.auth_covered_object_class_import_str}/',
+                {
+                    'access_rules': [
+                        {
+                            'action': action_read.id,
+                            'rule': False,
+                            'by_owner_only': True,
+                        },
+
+                    ],
+                    'roles': [user_role.id, ],
+                },
+                format='json'
+        )
+        self.assertEqual(response.status_code, 201)
+
+        self.login('ordinary_user1', 'ordinary_user1')
+        response = self.client.get(
+            self.base_url + f'/workspace/?path={test_workspace_path}'
+        )
+        # ordinary user1 is owner so access denied
+        self.assertEqual(response.status_code, 403)
+        self.login('ordinary_user2', 'ordinary_user2')
+        response = self.client.get(
+            self.base_url + f'/workspace/?path={test_workspace_path}'
+        )
+        self.assertEqual(response.status_code, 200)

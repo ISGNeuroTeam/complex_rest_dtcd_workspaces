@@ -17,7 +17,7 @@ from dtcd_workspaces.models import DirectoryContentKeychain
 from core.globals import global_vars
 from rest_auth.models.abc import IAuthCovered
 from rest_auth.models import User
-from rest_auth.authorization import auth_covered_method
+from rest_auth.authorization import auth_covered_method, auth_covered_func
 
 
 class DirectoryContent:
@@ -83,11 +83,25 @@ class DirectoryContent:
         """
         Args:
             path (str): Human readable relative path
+            initialized_from_inside_class (bool): Flag, initialization from get class method
+                if initialized_from_inside_class=False then object didn't exist before
         """
         self.path: str = self._validate_path(path)
         self.creation_time: float = None
         self.modification_time: float = None
         self.meta: dict = None
+        self.owner_guid = None
+        self.keychain_id = None
+
+        if not initialized_from_inside_class: # directory content object created for the first time
+            self._create_actions(path)
+
+    @auth_covered_func(action_name='create')
+    def _create_actions(self, path):
+        print(f'CREATE ACTION {path}')
+        # use get method to get existing directory content
+        if self.absolute_filesystem_path.exists():
+            raise DirectoryContentException(DirectoryContentException.PATH_EXISTS, path)
 
         # when first creation owner is current user
         current_user = global_vars.get_current_user()
@@ -95,12 +109,6 @@ class DirectoryContent:
             self.owner_guid = current_user.guid.hex
         else:
             self.owner_guid = None
-
-        self.keychain_id = None
-
-        # you should use get method to get existing directory content
-        if not initialized_from_inside_class and self.absolute_filesystem_path.exists():
-            raise DirectoryContentException(DirectoryContentException.PATH_EXISTS, path)
 
     @property
     def title(self) -> str:
@@ -137,6 +145,14 @@ class DirectoryContent:
             dct = json.load(f)
             for attr in self.saved_to_file_attributes:
                 setattr(self, attr, dct.get(attr))
+        self._read_method()
+
+    @auth_covered_method(action_name='read')
+    def _read_method(self):
+        """
+        Method for decorator
+        """
+        pass
 
     @staticmethod
     def _write_file(data: dict, absolute_filesystem_path: Path):
@@ -192,7 +208,6 @@ class DirectoryContent:
         """
         raise NotImplementedError
 
-    @auth_covered_method(action_name='read')
     def load(self):
         """
         load attributes from filesystem
