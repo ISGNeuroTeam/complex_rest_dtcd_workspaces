@@ -5,6 +5,7 @@ from typing import List
 from pathlib import Path
 from rest_auth.authorization import auth_covered_method, auth_covered_func
 
+from .utils import remove
 from .directorycontent_exception import DirectoryContentException
 from .directory_content import DirectoryContent
 from ..settings import DIR_META_NAME, WORKSPACE_BASE_PATH
@@ -65,6 +66,14 @@ class Directory(DirectoryContent):
             raise DirectoryContentException(DirectoryContentException.NO_DIR, str(parent_dir_path))
         self.absolute_filesystem_path.mkdir(exist_ok=True)
         self._write_attributes_to_json_file(self.dir_meta_path)
+
+    @auth_covered_method(action_name='delete')
+    def delete(self):
+        # try to delete contents of directory first
+        for dir_content in self.list():
+            dir_content.delete()
+
+        remove(self.absolute_filesystem_path)
 
 
 DirectoryContent.register_child_class(Directory)

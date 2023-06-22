@@ -1,6 +1,7 @@
 from pathlib import Path
 from rest_auth.authorization import auth_covered_method, auth_covered_func
 
+from .utils import remove
 from .directory_content import DirectoryContent
 from .directorycontent_exception import DirectoryContentException
 
@@ -50,6 +51,9 @@ class Workspace(DirectoryContent):
         workspace.load()
         return workspace
 
+    @auth_covered_method(action_name='delete')
+    def delete(self):
+        remove(self.absolute_filesystem_path)
 
 DirectoryContent.register_child_class(Workspace)
 

@@ -146,7 +146,6 @@ class RoleModelTest(APITestCase):
         response = self.client.post(
             self.base_url + '/directory/?path=test3', data={'meta': {'tset': 'test'}}, format='json'
         )
-        print(response.data)
         self.assertEqual(response.status_code, 403)
 
     def test_read_only_by_owner(self):
@@ -209,3 +208,59 @@ class RoleModelTest(APITestCase):
             self.base_url + f'/workspace/?path={test_workspace_path}'
         )
         self.assertEqual(response.status_code, 200)
+
+    def test_delete_inner_directory_denied(self):
+        user_group = Group(name='test_group')
+        user_group.save()
+        ordinary_user = User.objects.get(username='ordinary_user1')
+        ordinary_user.groups.add(user_group)
+        ordinary_user.save()
+
+        user_role = Role(name='test_role')
+        user_role.save()
+        user_role.groups.add(user_group)
+
+        directory = Directory('test1')
+        directory.save()
+
+        inner_dir = Directory('test1/inner_dir')
+        inner_dir.save()
+
+        self.login('admin', 'admin')
+        action_delete = Action.objects.get(plugin__name='dtcd_workspaces', name='delete')
+
+        # create keychain
+        response = self.client.post(
+            f'/auth/keychains/{self.auth_covered_object_class_import_str}/',
+            {
+                'auth_covered_objects': ['test1/inner_dir', ],
+            },
+            format='json'
+        )
+        keychain_id = response.data['id']
+        # forbid delete inner directory
+        response = self.client.post(
+                f'/auth/permits/{self.auth_covered_object_class_import_str}/',
+                {
+                    'access_rules': [
+                        {
+                            'action': action_delete.id,
+                            'rule': False,
+                            'by_owner_only': False,
+                        },
+
+                    ],
+                    'roles': [user_role.id, ],
+                    'keychain_ids': [keychain_id, ]
+                },
+                format='json'
+        )
+        self.assertEqual(response.status_code, 201)
+
+        # try to delete directory
+        self.login('ordinary_user1', 'ordinary_user1')
+
+        response = self.client.post(
+            self.base_url + '/directory/?path=test1&action=delete', format='json'
+        )
+        self.assertEqual(response.status_code, 403)
