@@ -9,23 +9,18 @@ PROJECT_DIR = Path(__file__).parent
 ROLE_MODEL_ACTIONS = {
     'create': {
         'default_rule': True,  # allow or deny True or False, default True,
-        'owner_applicability': True,  # default True
     },
     'read': {
         'default_rule': True,  # allow or deny True or False, default True,
-        'owner_applicability': True,  # default True
     },
     'update': {
         'default_rule': True,  # allow or deny True or False, default True,
-        'owner_applicability': True,  # default True
     },
     'delete': {
         'default_rule': True,  # allow or deny True or False, default True,
-        'owner_applicability': True,  # default True
     },
     'move': {
         'default_rule': True,  # allow or deny True or False, default True,
-        'owner_applicability': True,  # default True
     },
 }
 ROLE_MODEL_AUTH_COVERED_CLASSES = ['dtcd_workspaces.workspaces.directory_content.DirectoryContent',]

@@ -98,7 +98,6 @@ class DirectoryContent:
 
     @auth_covered_func(action_name='create')
     def _create_actions(self, path):
-        print(f'CREATE ACTION {path}')
         # use get method to get existing directory content
         if self.absolute_filesystem_path.exists():
             raise DirectoryContentException(DirectoryContentException.PATH_EXISTS, path)
