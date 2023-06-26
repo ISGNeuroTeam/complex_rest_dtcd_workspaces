@@ -108,10 +108,10 @@ class DirectoryContentView(APIView):
         return Response(data=self.serializer_class(directory_content).data, status=status.HTTP_200_OK)
 
     def _move(self, path, request, **kwargs):
-        new_path = request.POST.get('new_path', None)
+        new_path = request.data.get('new_path', None)
         if new_path is None:
             return ErrorResponse(
-                http_status=status.HTTP_400_BAD_REQUEST, error_message='new path required for action update'
+                http_status=status.HTTP_400_BAD_REQUEST, error_message='new path required for action move'
             )
         directory_content = self.directory_content_class.get(path)
         directory_content.move(new_path)

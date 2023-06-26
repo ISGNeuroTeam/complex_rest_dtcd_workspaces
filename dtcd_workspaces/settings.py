@@ -1,7 +1,7 @@
 import configparser
 import os
 from pathlib import Path
-from core.settings.ini_config import merge_ini_config_with_defaults
+from core.settings.ini_config import merge_ini_config_with_defaults, make_abs_paths
 
 
 PROJECT_DIR = Path(__file__).parent
@@ -45,6 +45,17 @@ config_parser.read(conf_path)
 
 # FIXME option false in config gets converted from 'false' to True
 ini_config = merge_ini_config_with_defaults(config_parser, default_ini_config)
+
+make_abs_paths(
+    ini_config,
+    [
+        ['workspace', 'base_path'],
+        ['workspace', 'tmp_path'],
+    ],
+    base_dir = Path(__file__).parent
+)
+
+print(ini_config['workspace'])
 
 # service dirs
 if not os.path.isdir(PROJECT_DIR / "plugins"):
