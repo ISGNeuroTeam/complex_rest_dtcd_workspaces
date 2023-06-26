@@ -66,6 +66,7 @@ class DirectoryContent:
     @keychain.setter
     def keychain(self, keychain: DirectoryContentKeychain):
         self.keychain_id = keychain.id
+        self.save(ignore_authorization=True)
 
     @classmethod
     def get_auth_object(cls, auth_id: str):

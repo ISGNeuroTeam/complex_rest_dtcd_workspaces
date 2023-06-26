@@ -55,7 +55,6 @@ make_abs_paths(
     base_dir = Path(__file__).parent
 )
 
-print(ini_config['workspace'])
 
 # service dirs
 if not os.path.isdir(PROJECT_DIR / "plugins"):
