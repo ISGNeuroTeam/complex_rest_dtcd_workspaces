@@ -16,7 +16,6 @@ class Command(BaseCommand):
     # https://docs.djangoproject.com/en/4.0/topics/testing/tools/#topics-testing-management-commands
 
     def handle(self, *args, **options):
-        pass
         keychain_name = 'root_access_zone_keychain'
 
         if not DirectoryContentKeychain.objects.filter(_name=keychain_name).exists():

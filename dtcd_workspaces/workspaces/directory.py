@@ -1,5 +1,6 @@
 import datetime
 import json
+import logging
 from typing import List
 
 from pathlib import Path
@@ -36,13 +37,16 @@ class Directory(DirectoryContent):
         directory_content_list = []
         for item in self.absolute_filesystem_path.iterdir():
             if not item.name == DIR_META_NAME:
-                directory_content_list.append(
-                    DirectoryContent.get(
+                try:
+                    dir_content = DirectoryContent.get(
                         self._get_relative_humanreadable_path(
                             str(item.relative_to(WORKSPACE_BASE_PATH))
                         )
                     )
-                 )
+                except DirectoryContentException as err:
+                    logging.warning(f'Can\'t read directory content {item}. Skip it in list.\n {str(err)}')
+                    continue
+                directory_content_list.append(dir_content)
         return directory_content_list
 
     def load(self):
@@ -50,7 +54,9 @@ class Directory(DirectoryContent):
         Load attributes from meta filename
         """
         if not self.absolute_filesystem_path.exists():
-            raise DirectoryContentException(DirectoryContentException.DOES_NOT_EXIST, str(self.absolute_filesystem_path))
+            raise DirectoryContentException(
+                DirectoryContentException.DOES_NOT_EXIST, str(self.absolute_filesystem_path)
+            )
         self._read_attributes_from_json_file(self.dir_meta_path)
 
     @classmethod

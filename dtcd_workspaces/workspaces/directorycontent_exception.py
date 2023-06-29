@@ -27,6 +27,7 @@ class DirectoryContentException(Exception):
     IS_ROOT = 25
     DOES_NOT_EXIST = 26
     PATH_EXISTS = 27
+    LOAD_ERROR = 28
 
     def __init__(self, problem, *args):
         msg = 'no message'
@@ -84,4 +85,6 @@ class DirectoryContentException(Exception):
             msg = f'Path {args[0]} does not exist'
         elif problem == DirectoryContentException.PATH_EXISTS:
             msg = f'Path {args[0]} already exists'
+        elif problem == DirectoryContentException.LOAD_ERROR:
+            msg = f'Can\'t load  {args[0]}'
         super().__init__(msg)

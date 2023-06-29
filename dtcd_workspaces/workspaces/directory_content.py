@@ -1,4 +1,5 @@
 import base64
+import logging
 import os
 import json
 import uuid
@@ -19,6 +20,7 @@ from rest_auth.models.abc import IAuthCovered
 from rest_auth.models import User
 from rest_auth.authorization import auth_covered_method, auth_covered_func
 
+log = logging.getLogger('dtcd_workspaces')
 
 class DirectoryContent:
     # child classes must be registered
@@ -142,7 +144,11 @@ class DirectoryContent:
         Load attributes from json file
         """
         with open(absolute_file_path, 'r', encoding='UTF-8') as f:
-            dct = json.load(f)
+            try:
+                dct = json.load(f)
+            except json.JSONDecodeError as err:
+                log.warning(f'Can\'t read file {absolute_file_path}: {str(err)}')
+                raise DirectoryContentException(DirectoryContentException.LOAD_ERROR, str(absolute_file_path))
             for attr in self.saved_to_file_attributes:
                 setattr(self, attr, dct.get(attr))
         self._read_method()
@@ -174,22 +180,28 @@ class DirectoryContent:
         """
         Returns filesystem path
         """
-        return os.sep.join(map(
-            lambda path_part: encode_name(path_part),
-            relative_human_readable_path.split('/')  # no os.sep because it's parameter
-        ))
+        try:
+            return os.sep.join(map(
+                lambda path_part: encode_name(path_part),
+                relative_human_readable_path.split('/')  # no os.sep because it's parameter
+            ))
+        except ValueError as err:
+            raise DirectoryContentException(DirectoryContentException.INVALID_PATH, relative_human_readable_path)
 
     @staticmethod
     def _get_relative_humanreadable_path(relative_filesystem_path: str) -> str:
         """
         Returns humanreadable path relative to root workspace directory
         """
-        return '/'.join(
-            map(
-                lambda path_part: decode_name(path_part),
-                relative_filesystem_path.split(os.sep)
+        try:
+            return '/'.join(
+                map(
+                    lambda path_part: decode_name(path_part),
+                    relative_filesystem_path.split(os.sep)
+                )
             )
-        )
+        except ValueError as err:
+            raise DirectoryContentException(DirectoryContentException.INVALID_PATH, relative_filesystem_path)
 
     @staticmethod
     def _validate_path(path):
