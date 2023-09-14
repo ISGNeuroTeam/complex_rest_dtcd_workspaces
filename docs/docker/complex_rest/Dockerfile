@@ -12,7 +12,7 @@ ENV dtcd_workspaces_conf=/complex_rest/complex_rest/dtcd_workspaces.conf
 
 RUN mkdir /complex_rest
 
-RUN git clone -b feature/role_model_api https://github.com/ISGNeuroTeam/complex_rest.git
+RUN git clone -b feature/keycloak_integration https://github.com/ISGNeuroTeam/complex_rest.git
 
 RUN chmod -R 0777 /complex_rest
 

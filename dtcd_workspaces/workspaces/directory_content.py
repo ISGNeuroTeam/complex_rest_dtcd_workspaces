@@ -67,7 +67,10 @@ class DirectoryContent:
 
     @keychain.setter
     def keychain(self, keychain: DirectoryContentKeychain):
-        self.keychain_id = keychain.id
+        if keychain is None:
+            self.keychain_id = None
+        else:
+            self.keychain_id = keychain.id
         self.save(ignore_authorization=True)
 
     @classmethod

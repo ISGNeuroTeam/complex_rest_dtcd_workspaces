@@ -32,7 +32,11 @@ services:
     volumes:
       - ./dtcd_workspaces:/complex_rest/plugins/dtcd_workspaces
       - ./logs:/complex_rest/logs
+      - ./docs:/docs
     user: ${CURRENT_UID}
+
+    environment:
+      - REST_CONF=/docs/docker/rest_test.conf
 
     depends_on:
       - postgres
@@ -48,7 +52,11 @@ services:
     volumes:
       - ./dtcd_workspaces:/complex_rest/plugins/dtcd_workspaces
       - ./logs:/complex_rest/logs
+      - ./docs:/docs
     user: ${CURRENT_UID}
+
+    environment:
+      - REST_CONF=/docs/docker/rest_test.conf
 
     depends_on:
       - postgres
@@ -66,10 +74,14 @@ services:
       - ./dtcd_workspaces:/complex_rest/plugins/dtcd_workspaces
       - ./logs:/complex_rest/logs
       - ./tests:/complex_rest/tests
+      - ./docs:/docs
     user: ${CURRENT_UID}
     ports:
       - "8080:8080"
     command: "python /complex_rest/complex_rest/manage.py runserver [::]:8080"
+
+    environment:
+      - REST_CONF=/docs/docker/rest_test.conf
 
     depends_on:
       - postgres
