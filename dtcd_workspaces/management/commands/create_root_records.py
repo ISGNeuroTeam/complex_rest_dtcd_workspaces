@@ -2,7 +2,7 @@ import json
 
 from django.core.management.base import BaseCommand, CommandError
 from pathlib import Path
-
+from core.globals import global_vars
 from rest_auth.models import User, Plugin, SecurityZone
 
 from dtcd_workspaces.models import DirectoryContentKeychain
@@ -16,6 +16,8 @@ class Command(BaseCommand):
     # https://docs.djangoproject.com/en/4.0/topics/testing/tools/#topics-testing-management-commands
 
     def handle(self, *args, **options):
+        # disable authorization
+        global_vars['disable_authorization'] = True
         keychain_name = 'root_access_zone_keychain'
 
         if not DirectoryContentKeychain.objects.filter(_name=keychain_name).exists():
