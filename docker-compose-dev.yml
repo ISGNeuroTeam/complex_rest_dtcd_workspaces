@@ -29,6 +29,30 @@ services:
     depends_on:
       - zookeeper
 
+  ldap:
+    image: 'rroemhild/test-openldap'
+    ports:
+      - "10389:10389"
+      - "10636:10636"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0.1
+
+    user: ${CURRENT_UID}
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./:/dtcd_workspaces
+    depends_on:
+      - ldap
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_HTTP_PORT=8090
+      - KC_FEATURES=account-api,account2,authorization,client-policies,impersonation,docker,scripts
+    entrypoint: /dtcd_workspaces/docs/docker/keycloak/entrypoint.sh
+    command: /opt/keycloak/bin/kc.sh start-dev
+
   celery-worker:
     build:
       context: ./
@@ -71,7 +95,11 @@ services:
       - ./dtcd_workspaces:/complex_rest/plugins/dtcd_workspaces
       - ./logs:/complex_rest/logs
       - ./tests:/complex_rest/tests
+      - /work/complex_rest/complex_rest:/complex_rest/complex_rest
 
+    environment:
+      - REST_CONF=/complex_rest/plugins/dtcd_workspaces/rest.conf
+      - dtcd_workspaces_conf=/complex_rest/plugins/dtcd_workspaces/dtcd_workspaces.conf
     user: ${CURRENT_UID}
     ports:
       - "8080:8080"

@@ -7,19 +7,19 @@ from core.settings.ini_config import merge_ini_config_with_defaults, make_abs_pa
 PROJECT_DIR = Path(__file__).parent
 
 ROLE_MODEL_ACTIONS = {
-    'create': {
+    'workspace.create': {
         'default_rule': True,  # allow or deny True or False, default True,
     },
-    'read': {
+    'workspace.read': {
         'default_rule': True,  # allow or deny True or False, default True,
     },
-    'update': {
+    'workspace.update': {
         'default_rule': True,  # allow or deny True or False, default True,
     },
-    'delete': {
+    'workspace.delete': {
         'default_rule': True,  # allow or deny True or False, default True,
     },
-    'move': {
+    'workspace.move': {
         'default_rule': True,  # allow or deny True or False, default True,
     },
 }

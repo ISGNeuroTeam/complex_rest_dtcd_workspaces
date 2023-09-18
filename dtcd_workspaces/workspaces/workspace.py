@@ -28,7 +28,7 @@ class Workspace(DirectoryContent):
             return True
         return False
 
-    @auth_covered_method(action_name='update')
+    @auth_covered_method(action_name='workspace.update')
     def save(self):
         parent_dir_path = self.absolute_filesystem_path.parent
         if not parent_dir_path.exists():
@@ -51,7 +51,7 @@ class Workspace(DirectoryContent):
         workspace.load()
         return workspace
 
-    @auth_covered_method(action_name='delete')
+    @auth_covered_method(action_name='workspace.delete')
     def delete(self):
         remove(self.absolute_filesystem_path)
 
