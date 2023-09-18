@@ -18,7 +18,7 @@ class DirectorySerializer(DirectoryContentSerializer):
     def create(self, validated_data):
         directory = Directory(validated_data['path'])
         directory.meta = validated_data['meta']
-        directory.save()
+        directory.save(ignore_authorization=True)
         return directory
 
     def update(self, instance, validated_data):
@@ -34,7 +34,7 @@ class WorkspaceSerializer(DirectoryContentSerializer):
         workspace = Workspace(validated_data['path'])
         workspace.meta = validated_data['meta']
         workspace.content = validated_data['content']
-        workspace.save()
+        workspace.save(ignore_authorization=True)
         return workspace
 
     def update(self, instance, validated_data):

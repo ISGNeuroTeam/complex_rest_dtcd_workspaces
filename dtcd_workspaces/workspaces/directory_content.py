@@ -22,6 +22,7 @@ from rest_auth.authorization import auth_covered_method, auth_covered_func
 
 log = logging.getLogger('dtcd_workspaces')
 
+
 class DirectoryContent:
     # child classes must be registered
     _child_classes = []
@@ -102,7 +103,7 @@ class DirectoryContent:
         if not initialized_from_inside_class: # directory content object created for the first time
             self._create_actions(path)
 
-    @auth_covered_func(action_name='create')
+    @auth_covered_func(action_name='workspace.create')
     def _create_actions(self, path):
         # use get method to get existing directory content
         if self.absolute_filesystem_path.exists():
@@ -156,7 +157,7 @@ class DirectoryContent:
                 setattr(self, attr, dct.get(attr))
         self._read_method()
 
-    @auth_covered_method(action_name='read')
+    @auth_covered_method(action_name='workspace.read')
     def _read_method(self):
         """
         Method for decorator
@@ -216,7 +217,7 @@ class DirectoryContent:
             raise DirectoryContentException(DirectoryContentException.PATH_WITH_DOTS, path)
         return path
 
-    @auth_covered_method(action_name='update')
+    @auth_covered_method(action_name='workspace.update')
     def save(self):
         """
         Saves object to filesystem storage
@@ -239,7 +240,7 @@ class DirectoryContent:
             if child_cls.is_path_for_cls(path):
                 return child_cls.get(path)
 
-    @auth_covered_method(action_name='move')
+    @auth_covered_method(action_name='workspace.move')
     def move(self, new_path: str):
         """
         Moves all content to new path
@@ -266,7 +267,7 @@ class DirectoryContent:
 
         self.path = new_path
 
-    @auth_covered_method(action_name='delete')
+    @auth_covered_method(action_name='workspace.delete')
     def delete(self):
         remove(self.absolute_filesystem_path)
 
