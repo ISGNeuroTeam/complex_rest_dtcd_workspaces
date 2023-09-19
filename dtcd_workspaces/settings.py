@@ -23,7 +23,17 @@ ROLE_MODEL_ACTIONS = {
         'default_rule': True,  # allow or deny True or False, default True,
     },
 }
-ROLE_MODEL_AUTH_COVERED_CLASSES = ['dtcd_workspaces.workspaces.directory_content.DirectoryContent',]
+ROLE_MODEL_AUTH_COVERED_CLASSES = {
+    'dtcd_workspaces.workspaces.directory_content.DirectoryContent': [
+        'workspace.read',
+        'workspace.create',
+        'workspace.update',
+        'workspace.delete',
+        'workspace.move'
+    ]
+}
+
+
 default_ini_config = {
     'logging': {
         'level': 'INFO'

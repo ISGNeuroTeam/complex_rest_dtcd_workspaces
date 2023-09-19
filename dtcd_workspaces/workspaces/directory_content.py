@@ -18,12 +18,12 @@ from dtcd_workspaces.models import DirectoryContentKeychain
 from core.globals import global_vars
 from rest_auth.models.abc import IAuthCovered
 from rest_auth.models import User
-from rest_auth.authorization import auth_covered_method, auth_covered_func
+from rest_auth.authorization import auth_covered_method, auth_covered_func, authz_integration
 
 log = logging.getLogger('dtcd_workspaces')
 
 
-class DirectoryContent:
+class DirectoryContent(IAuthCovered):
     # child classes must be registered
     _child_classes = []
 
@@ -162,6 +162,8 @@ class DirectoryContent:
         """
         Method for decorator
         """
+        # Check permission impossible before load
+        # so we need to read before we can understand that we have no permission to read :)
         pass
 
     @staticmethod
@@ -216,6 +218,16 @@ class DirectoryContent:
         if tokens[-1] == '..' or tokens[-1] == DIR_META_NAME:
             raise DirectoryContentException(DirectoryContentException.PATH_WITH_DOTS, path)
         return path
+
+    @classmethod
+    @authz_integration(authz_action='create')
+    @auth_covered_func(action_name='workspace.create')
+    def create(cls, path: str, **kwargs):
+        directory_content_instance: DirectoryContent = cls(path)
+        for attr_name in kwargs:
+            setattr(directory_content_instance, attr_name, kwargs[attr_name])
+        directory_content_instance.save(ignore_authorization=True)
+        return directory_content_instance
 
     @auth_covered_method(action_name='workspace.update')
     def save(self):

@@ -16,9 +16,9 @@ class DirectoryContentSerializer(serializers.Serializer):
 
 class DirectorySerializer(DirectoryContentSerializer):
     def create(self, validated_data):
-        directory = Directory(validated_data['path'])
-        directory.meta = validated_data['meta']
-        directory.save(ignore_authorization=True)
+        directory = Directory.create(
+            validated_data['path'], meta=validated_data['meta'],
+        )
         return directory
 
     def update(self, instance, validated_data):
@@ -31,10 +31,11 @@ class WorkspaceSerializer(DirectoryContentSerializer):
     content = serializers.DictField()
 
     def create(self, validated_data):
-        workspace = Workspace(validated_data['path'])
-        workspace.meta = validated_data['meta']
-        workspace.content = validated_data['content']
-        workspace.save(ignore_authorization=True)
+        workspace = Workspace.create(
+            validated_data['path'],
+            meta=validated_data['meta'],
+            content=validated_data['content'],
+        )
         return workspace
 
     def update(self, instance, validated_data):
