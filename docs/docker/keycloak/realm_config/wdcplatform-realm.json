@@ -742,6 +742,16 @@
           "roles" : "[{\"id\":\"creators\",\"required\":false}]"
         }
       }, {
+        "id" : "80116cde-0b46-4cd7-9141-4459e4193d9f",
+        "name" : "allow_for_role2",
+        "description" : "",
+        "type" : "role",
+        "logic" : "POSITIVE",
+        "decisionStrategy" : "UNANIMOUS",
+        "config" : {
+          "roles" : "[{\"id\":\"role2\",\"required\":false}]"
+        }
+      }, {
         "id" : "603309a8-8ab9-47e5-8ca8-465779161a21",
         "name" : "Allow test.protected_acteion1 for role1",
         "description" : "",
@@ -763,6 +773,28 @@
           "scopes" : "[\"workspace.create\"]",
           "applyPolicies" : "[\"allow_for_creators\"]"
         }
+      }, {
+        "id" : "044bc2a4-f760-49c0-9ac7-de5a6f8b729a",
+        "name" : "allow_owner_move_workspaces",
+        "description" : "",
+        "type" : "scope",
+        "logic" : "POSITIVE",
+        "decisionStrategy" : "UNANIMOUS",
+        "config" : {
+          "scopes" : "[\"workspace.move\"]",
+          "applyPolicies" : "[\"Only owner\"]"
+        }
+      }, {
+        "id" : "15b4d55b-6f23-4b75-af2b-4dc7bf09ef38",
+        "name" : "allow_read_for_owners",
+        "description" : "",
+        "type" : "scope",
+        "logic" : "POSITIVE",
+        "decisionStrategy" : "UNANIMOUS",
+        "config" : {
+          "scopes" : "[\"workspace.read\"]",
+          "applyPolicies" : "[\"Only owner\"]"
+        }
       } ],
       "scopes" : [ {
         "id" : "43b6f366-4d7e-4773-9474-5fd175bd5a9f",
@@ -773,8 +805,20 @@
         "id" : "7fecbe91-8277-4257-bd22-66c78c1a354d",
         "name" : "workspace.create",
         "iconUri" : ""
+      }, {
+        "id" : "cab9291f-8e41-40e7-b07d-e076cabaf7c0",
+        "name" : "workspace.move"
+      }, {
+        "id" : "8bc71a6c-c993-417c-b066-60c5f0d00f83",
+        "name" : "workspace.read"
+      }, {
+        "id" : "41cf284b-aeb3-40c2-9ed5-6a6f18eedd90",
+        "name" : "workspace.update"
+      }, {
+        "id" : "0788b91d-8699-424b-98b6-aee887453439",
+        "name" : "workspace.delete"
       } ],
-      "decisionStrategy" : "UNANIMOUS"
+      "decisionStrategy" : "AFFIRMATIVE"
     }
   }, {
     "id" : "c07f6240-fdc7-402f-8d4d-104cf59c7b0a",
@@ -1427,7 +1471,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-full-name-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper", "oidc-usermodel-property-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "oidc-address-mapper", "oidc-usermodel-property-mapper", "saml-user-attribute-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper" ]
       }
     }, {
       "id" : "62952a7f-77c9-4164-a952-ad144e178170",
@@ -1454,7 +1498,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-full-name-mapper", "oidc-address-mapper", "saml-role-list-mapper", "oidc-usermodel-attribute-mapper", "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-attribute-mapper", "oidc-usermodel-property-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-usermodel-property-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "oidc-address-mapper", "saml-role-list-mapper", "saml-user-property-mapper", "saml-user-attribute-mapper", "oidc-sha256-pairwise-sub-mapper" ]
       }
     } ],
     "org.keycloak.storage.UserStorageProvider" : [ {
@@ -1470,8 +1514,8 @@
           "config" : {
             "ldap.attribute" : [ "sn" ],
             "is.mandatory.in.ldap" : [ "true" ],
-            "read.only" : [ "true" ],
             "always.read.value.from.ldap" : [ "true" ],
+            "read.only" : [ "true" ],
             "user.model.attribute" : [ "lastName" ]
           }
         }, {
@@ -1488,8 +1532,8 @@
           "config" : {
             "ldap.attribute" : [ "whenCreated" ],
             "is.mandatory.in.ldap" : [ "false" ],
-            "read.only" : [ "true" ],
             "always.read.value.from.ldap" : [ "true" ],
+            "read.only" : [ "true" ],
             "user.model.attribute" : [ "createTimestamp" ]
           }
         }, {
@@ -1500,8 +1544,8 @@
           "config" : {
             "membership.attribute.type" : [ "DN" ],
             "group.name.ldap.attribute" : [ "cn" ],
-            "membership.user.ldap.attribute" : [ "dn" ],
             "preserve.group.inheritance" : [ "false" ],
+            "membership.user.ldap.attribute" : [ "dn" ],
             "groups.dn" : [ "ou=people,dc=planetexpress,dc=com" ],
             "mode" : [ "READ_ONLY" ],
             "user.roles.retrieve.strategy" : [ "LOAD_GROUPS_BY_MEMBER_ATTRIBUTE" ],
@@ -1509,8 +1553,8 @@
             "ignore.missing.groups" : [ "false" ],
             "memberof.ldap.attribute" : [ "memberOf" ],
             "group.object.classes" : [ "Group" ],
-            "groups.path" : [ "/" ],
-            "drop.non.existing.groups.during.sync" : [ "false" ]
+            "drop.non.existing.groups.during.sync" : [ "false" ],
+            "groups.path" : [ "/" ]
           }
         }, {
           "id" : "5b0c4813-5419-4391-8662-854b2202aa2b",
@@ -1520,8 +1564,8 @@
           "config" : {
             "ldap.attribute" : [ "whenChanged" ],
             "is.mandatory.in.ldap" : [ "false" ],
-            "read.only" : [ "true" ],
             "always.read.value.from.ldap" : [ "true" ],
+            "read.only" : [ "true" ],
             "user.model.attribute" : [ "modifyTimestamp" ]
           }
         }, {
@@ -1542,8 +1586,8 @@
           "config" : {
             "ldap.attribute" : [ "uid" ],
             "is.mandatory.in.ldap" : [ "true" ],
-            "always.read.value.from.ldap" : [ "false" ],
             "read.only" : [ "true" ],
+            "always.read.value.from.ldap" : [ "false" ],
             "user.model.attribute" : [ "username" ]
           }
         }, {
@@ -1554,31 +1598,31 @@
           "config" : {
             "ldap.attribute" : [ "mail" ],
             "is.mandatory.in.ldap" : [ "false" ],
-            "always.read.value.from.ldap" : [ "false" ],
             "read.only" : [ "true" ],
+            "always.read.value.from.ldap" : [ "false" ],
             "user.model.attribute" : [ "email" ]
           }
         } ]
       },
       "config" : {
-        "pagination" : [ "false" ],
         "fullSyncPeriod" : [ "-1" ],
+        "pagination" : [ "false" ],
         "startTls" : [ "false" ],
-        "usersDn" : [ "ou=people,dc=planetexpress,dc=com" ],
         "connectionPooling" : [ "false" ],
+        "usersDn" : [ "ou=people,dc=planetexpress,dc=com" ],
         "cachePolicy" : [ "DEFAULT" ],
         "useKerberosForPasswordAuthentication" : [ "false" ],
         "importEnabled" : [ "true" ],
         "enabled" : [ "true" ],
         "changedSyncPeriod" : [ "-1" ],
-        "bindDn" : [ "cn=admin,dc=planetexpress,dc=com" ],
-        "bindCredential" : [ "GoodNewsEveryone" ],
         "usernameLDAPAttribute" : [ "uid" ],
+        "bindCredential" : [ "GoodNewsEveryone" ],
+        "bindDn" : [ "cn=admin,dc=planetexpress,dc=com" ],
         "lastSync" : [ "1693349879" ],
         "vendor" : [ "ad" ],
         "uuidLDAPAttribute" : [ "uid" ],
-        "connectionUrl" : [ "ldap://ldap:10389" ],
         "allowKerberosAuthentication" : [ "false" ],
+        "connectionUrl" : [ "ldap://ldap:10389" ],
         "syncRegistrations" : [ "true" ],
         "authType" : [ "simple" ],
         "searchScope" : [ "2" ],
