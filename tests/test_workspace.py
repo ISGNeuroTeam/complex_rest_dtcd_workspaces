@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 import time
 import os
+import uuid
 from pathlib import Path
 from rest.test import TransactionTestCase
 from rest_auth.apps import on_ready_actions as rest_auth_on_ready_actions
@@ -22,7 +23,7 @@ class TestWorkspace(TransactionTestCase):
         'another_info': 'test'
     }
     test_content = {
-        "id": "29b1aa3f-a5f4-4dd4-9904-cf1b2890791d",
+        "id": uuid.UUID("29b1aa3f-a5f4-4dd4-9904-cf1b2890791d"),
         "title": "Test_flow",
         "column": "12",
         "editMode": True,
@@ -56,11 +57,7 @@ class TestWorkspace(TransactionTestCase):
             meta_info = self.test_meta_info
         if content is None:
             content = self.test_content
-
-        workspace = Workspace(path)
-        workspace.meta = meta_info
-        workspace.content = content
-        workspace.save()
+        workspace = Workspace.create(path, meta=meta_info, content=content)
         return workspace
 
     def test_create_workspace(self):

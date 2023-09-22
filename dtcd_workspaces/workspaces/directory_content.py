@@ -12,7 +12,7 @@ from dtcd_workspaces.workspaces.directorycontent_exception import DirectoryConte
 from dtcd_workspaces.workspaces.utils import decode_name, encode_name
 
 from dtcd_workspaces.settings import WORKSPACE_BASE_PATH, WORKSPACE_TMP_PATH, DIR_META_NAME
-from dtcd_workspaces.workspaces.utils import encode_name, decode_name, copy, remove
+from dtcd_workspaces.workspaces.utils import encode_name, decode_name, remove, json_dumps, json_load
 from dtcd_workspaces.models import DirectoryContentKeychain
 
 from core.globals import global_vars
@@ -34,7 +34,7 @@ class DirectoryContent(IAuthCovered):
     # attributes list for json file
     # may be reassigned in child classes
     saved_to_file_attributes = [
-        'creation_time', 'modification_time', 'meta', 'keychain_id', 'owner_guid'
+        'id', 'creation_time', 'modification_time', 'meta', 'keychain_id', 'owner_guid'
     ]
 
     # --------------role model api methods--------------------
@@ -55,7 +55,7 @@ class DirectoryContent(IAuthCovered):
 
     @owner.setter
     def owner(self, user: 'User'):
-        self.owner_guid = user.guid.hex
+        self.owner_guid = user.guid
 
     @property
     def keychain(self):
@@ -99,6 +99,7 @@ class DirectoryContent(IAuthCovered):
         self.meta: dict = None
         self.owner_guid = None
         self.keychain_id = None
+        self.id = None
 
         if not initialized_from_inside_class: # directory content object created for the first time
             self._create_actions(path)
@@ -112,7 +113,7 @@ class DirectoryContent(IAuthCovered):
         # when first creation owner is current user
         current_user = global_vars.get_current_user()
         if current_user:
-            self.owner_guid = current_user.guid.hex
+            self.owner_guid = current_user.guid
         else:
             self.owner_guid = None
 
@@ -149,7 +150,7 @@ class DirectoryContent(IAuthCovered):
         """
         with open(absolute_file_path, 'r', encoding='UTF-8') as f:
             try:
-                dct = json.load(f)
+                dct = json_load(f)
             except json.JSONDecodeError as err:
                 log.warning(f'Can\'t read file {absolute_file_path}: {str(err)}')
                 raise DirectoryContentException(DirectoryContentException.LOAD_ERROR, str(absolute_file_path))
@@ -176,7 +177,7 @@ class DirectoryContent(IAuthCovered):
         """
         temp_file = Path(WORKSPACE_TMP_PATH) / Path(f'temp_{str(uuid.uuid4())}')
         try:
-            temp_file.write_text(json.dumps(data))
+            temp_file.write_text(json_dumps(data))
             temp_file.rename(absolute_filesystem_path)  # atomic operation
         except IOError:
             raise DirectoryContentException(DirectoryContentException.IO_ERROR, absolute_filesystem_path)
@@ -226,6 +227,7 @@ class DirectoryContent(IAuthCovered):
         directory_content_instance: DirectoryContent = cls(path)
         for attr_name in kwargs:
             setattr(directory_content_instance, attr_name, kwargs[attr_name])
+        directory_content_instance.id = uuid.uuid4()
         directory_content_instance.save(ignore_authorization=True)
         return directory_content_instance
 
