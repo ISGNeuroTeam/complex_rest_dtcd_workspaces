@@ -74,11 +74,6 @@ class DirectoryContentView(APIView):
         return Response(data=self.serializer_class(directory_content).data, status=status.HTTP_200_OK)
 
     def _create(self, path, request, **kwargs):
-        try:
-            existing_dir = self.directory_content_class.get(path)
-            return ErrorResponse(http_status=status.HTTP_400_BAD_REQUEST, error_message='Path already exist')
-        except DirectoryContentException as err:  # if directory not exists than ok
-            pass
         directory_dct = dict(request.data)
         directory_dct.update({'path': path})
         directory_content_serializer = self.serializer_class(

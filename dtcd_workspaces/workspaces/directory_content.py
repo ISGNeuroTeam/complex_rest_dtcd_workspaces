@@ -48,7 +48,7 @@ class DirectoryContent(IAuthCovered):
     def owner(self):
         if self.owner_guid:
             try:
-                return User.objects.get(guid=self.owner_guid)
+                return User.get_user(self.owner_guid)
             except User.DoesNotExist:
                 return None
         return None
