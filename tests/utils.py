@@ -33,7 +33,7 @@ class TDirectory(Directory):
     def get_plugin_name(view_filepath: str):
         return 'dtcd_workspaces'
 
-    @check_authorization(action='workspace.read')
+    @check_authorization(action='dtcd_workspaces.read')
     def list(self) -> Dict[str, List]:
         """List directory content allowed to read by user"""
         directories, workspaces = [], []

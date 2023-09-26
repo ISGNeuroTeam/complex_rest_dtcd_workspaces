@@ -29,7 +29,7 @@ class Directory(DirectoryContent):
     def dir_meta_path(self):
         return Path(self.absolute_filesystem_path) / DIR_META_NAME
 
-    @auth_covered_method(action_name='workspace.read')
+    @auth_covered_method(action_name='dtcd_workspaces.read')
     def list(self) -> List[DirectoryContent]:
         """
         Returns directory content
@@ -65,7 +65,7 @@ class Directory(DirectoryContent):
         directory.load()
         return directory
 
-    @auth_covered_method(action_name='workspace.update')
+    @auth_covered_method(action_name='dtcd_workspaces.update')
     def save(self):
         parent_dir_path = self.absolute_filesystem_path.parent
         if not parent_dir_path.exists():
@@ -73,7 +73,7 @@ class Directory(DirectoryContent):
         self.absolute_filesystem_path.mkdir(exist_ok=True)
         self._write_attributes_to_json_file(self.dir_meta_path)
 
-    @auth_covered_method(action_name='workspace.delete')
+    @auth_covered_method(action_name='dtcd_workspaces.delete')
     def delete(self):
         # try to delete contents of directory first
         for dir_content in self.list():

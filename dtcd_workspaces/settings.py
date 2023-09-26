@@ -7,30 +7,46 @@ from core.settings.ini_config import merge_ini_config_with_defaults, make_abs_pa
 PROJECT_DIR = Path(__file__).parent
 
 ROLE_MODEL_ACTIONS = {
-    'workspace.create': {
+    'dtcd_workspaces.create': {
         'default_rule': True,  # allow or deny True or False, default True,
     },
-    'workspace.read': {
+    'dtcd_workspaces.read': {
         'default_rule': True,  # allow or deny True or False, default True,
     },
-    'workspace.update': {
+    'dtcd_workspaces.update': {
         'default_rule': True,  # allow or deny True or False, default True,
     },
-    'workspace.delete': {
+    'dtcd_workspaces.delete': {
         'default_rule': True,  # allow or deny True or False, default True,
     },
-    'workspace.move': {
+    'dtcd_workspaces.move': {
         'default_rule': True,  # allow or deny True or False, default True,
     },
+
 }
 ROLE_MODEL_AUTH_COVERED_CLASSES = {
     'dtcd_workspaces.workspaces.directory_content.DirectoryContent': [
-        'workspace.read',
-        'workspace.create',
-        'workspace.update',
-        'workspace.delete',
-        'workspace.move'
-    ]
+        'dtcd_workspaces.read',
+        'dtcd_workspaces.create',
+        'dtcd_workspaces.update',
+        'dtcd_workspaces.delete',
+        'dtcd_workspaces.move'
+    ],
+    'dtcd_workspaces.workspaces.workspace.Workspace': [
+        'dtcd_workspaces.read',
+        'dtcd_workspaces.create',
+        'dtcd_workspaces.update',
+        'dtcd_workspaces.delete',
+        'dtcd_workspaces.move'
+    ],
+    'dtcd_workspaces.workspaces.directory.Directory': [
+        'dtcd_workspaces.read',
+        'dtcd_workspaces.create',
+        'dtcd_workspaces.update',
+        'dtcd_workspaces.delete',
+        'dtcd_workspaces.move'
+    ],
+
 }
 
 

@@ -75,7 +75,7 @@ class RoleModelTest(APITestCase):
         )
         keychain_id = response.data['id']
         # add permission for access deny
-        action_read = Action.objects.get(plugin__name='dtcd_workspaces', name='workspace.read')
+        action_read = Action.objects.get(plugin__name='dtcd_workspaces', name='dtcd_workspaces.read')
 
         # check access
         self.login('ordinary_user1', 'ordinary_user1')
@@ -124,7 +124,7 @@ class RoleModelTest(APITestCase):
         self.assertEqual(response.status_code, 200)
 
         # add permission for access deny
-        action_create = Action.objects.get(plugin__name='dtcd_workspaces', name='workspace.create')
+        action_create = Action.objects.get(plugin__name='dtcd_workspaces', name='dtcd_workspaces.create')
 
         self.login('admin', 'admin')
         response = self.client.post(
@@ -175,7 +175,7 @@ class RoleModelTest(APITestCase):
         self.assertEqual(response.status_code, 200)
 
         # add permission for access deny
-        action_read = Action.objects.get(plugin__name='dtcd_workspaces', name='workspace.read')
+        action_read = Action.objects.get(plugin__name='dtcd_workspaces', name='dtcd_workspaces.read')
 
         self.login('admin', 'admin')
 
@@ -227,7 +227,7 @@ class RoleModelTest(APITestCase):
         inner_dir.save()
 
         self.login('admin', 'admin')
-        action_delete = Action.objects.get(plugin__name='dtcd_workspaces', name='workspace.delete')
+        action_delete = Action.objects.get(plugin__name='dtcd_workspaces', name='dtcd_workspaces.delete')
 
         # create keychain
         response = self.client.post(
