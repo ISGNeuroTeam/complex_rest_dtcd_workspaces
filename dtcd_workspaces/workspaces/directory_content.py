@@ -252,6 +252,7 @@ class DirectoryContent(IAuthCovered):
             if child_cls.is_path_for_cls(path):
                 return child_cls.get(path)
 
+    @authz_integration(authz_action='update')
     @auth_covered_method(action_name='dtcd_workspaces.move')
     def move(self, new_path: str):
         """
@@ -279,6 +280,7 @@ class DirectoryContent(IAuthCovered):
 
         self.path = new_path
 
+    @authz_integration(authz_action='delete')
     @auth_covered_method(action_name='dtcd_workspaces.delete')
     def delete(self):
         remove(self.absolute_filesystem_path)
