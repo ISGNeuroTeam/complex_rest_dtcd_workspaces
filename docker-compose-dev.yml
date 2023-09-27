@@ -95,7 +95,6 @@ services:
       - ./dtcd_workspaces:/complex_rest/plugins/dtcd_workspaces
       - ./logs:/complex_rest/logs
       - ./tests:/complex_rest/tests
-      - /work/complex_rest/complex_rest:/complex_rest/complex_rest
 
     environment:
       - REST_CONF=/complex_rest/plugins/dtcd_workspaces/rest.conf
