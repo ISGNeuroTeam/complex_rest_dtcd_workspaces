@@ -45,6 +45,10 @@ class DirectoryContent(IAuthCovered):
         return self.path
 
     @property
+    def auth_name(self) -> str:
+        return self.path
+
+    @property
     def owner(self):
         if self.owner_guid:
             try:
@@ -220,7 +224,7 @@ class DirectoryContent(IAuthCovered):
         return path
 
     @classmethod
-    @authz_integration(authz_action='create')
+    @authz_integration(authz_action='create', id_attr='id')
     @auth_covered_func(action_name='dtcd_workspaces.create')
     def create(cls, path: str, **kwargs):
         directory_content_instance: DirectoryContent = cls(path)
@@ -252,7 +256,7 @@ class DirectoryContent(IAuthCovered):
             if child_cls.is_path_for_cls(path):
                 return child_cls.get(path)
 
-    @authz_integration(authz_action='update')
+    @authz_integration(authz_action='update', id_attr='id')
     @auth_covered_method(action_name='dtcd_workspaces.move')
     def move(self, new_path: str):
         """
@@ -280,7 +284,7 @@ class DirectoryContent(IAuthCovered):
 
         self.path = new_path
 
-    @authz_integration(authz_action='delete')
+    @authz_integration(authz_action='delete', id_attr='id')
     @auth_covered_method(action_name='dtcd_workspaces.delete')
     def delete(self):
         remove(self.absolute_filesystem_path)

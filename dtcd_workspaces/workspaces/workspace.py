@@ -28,7 +28,7 @@ class Workspace(DirectoryContent):
             return True
         return False
 
-    @authz_integration(authz_action='update')
+    @authz_integration(authz_action='update', id_attr='id')
     @auth_covered_method(action_name='dtcd_workspaces.update')
     def save(self):
         parent_dir_path = self.absolute_filesystem_path.parent
@@ -52,7 +52,7 @@ class Workspace(DirectoryContent):
         workspace.load()
         return workspace
 
-    @authz_integration(authz_action='delete')
+    @authz_integration(authz_action='delete', id_attr='id')
     @auth_covered_method(action_name='dtcd_workspaces.delete')
     def delete(self):
         remove(self.absolute_filesystem_path)

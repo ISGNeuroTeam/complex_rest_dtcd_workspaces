@@ -65,7 +65,7 @@ class Directory(DirectoryContent):
         directory.load()
         return directory
 
-    @authz_integration(authz_action='update')
+    @authz_integration(authz_action='update', id_attr='id')
     @auth_covered_method(action_name='dtcd_workspaces.update')
     def save(self):
         parent_dir_path = self.absolute_filesystem_path.parent
@@ -74,7 +74,7 @@ class Directory(DirectoryContent):
         self.absolute_filesystem_path.mkdir(exist_ok=True)
         self._write_attributes_to_json_file(self.dir_meta_path)
 
-    @authz_integration(authz_action='delete')
+    @authz_integration(authz_action='delete', id_attr='id')
     @auth_covered_method(action_name='dtcd_workspaces.delete')
     def delete(self):
         # try to delete contents of directory first
