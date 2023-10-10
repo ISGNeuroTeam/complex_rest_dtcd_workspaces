@@ -88,6 +88,15 @@ docker_test: logs
 	CURRENT_UID=$$(id -u):$$(id -g) docker-compose -f docker-compose-test.yml run --rm  complex_rest python ./complex_rest/manage.py test ./tests --settings=core.settings.test --no-input
 	$(call clean_docker_containers)
 
+docker_dev:
+	$(call clean_docker_containers)
+	@echo "Start develop..."
+	CURRENT_UID=$$(id -u):$$(id -g) docker-compose -f docker-compose-dev.yml up -d
+	$(call clean_docker_containers)
+
+docker_dev_stop:
+	CURRENT_UID=$$(id -u):$$(id -g) docker-compose -f docker-compose-dev.yml stop
+
 clean_docker_test:
 	$(call clean_docker_containers)
 

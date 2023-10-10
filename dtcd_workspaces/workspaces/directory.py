@@ -1,5 +1,3 @@
-import datetime
-import json
 import logging
 from typing import List
 
@@ -10,23 +8,14 @@ from .utils import remove
 from .directorycontent_exception import DirectoryContentException
 from .directory_content import DirectoryContent
 from ..settings import DIR_META_NAME, WORKSPACE_BASE_PATH
+from .directory_base_object import DirectoryBaseObject
 
 
-class Directory(DirectoryContent):
-    def __init__(self, path: str, initialized_from_inside_class=False):
-        super().__init__(path, initialized_from_inside_class)
-
-    @classmethod
-    def is_path_for_cls(cls, path: str) -> bool:
-        """
-        Returns True id path identify a directory
-        """
-        if Path(cls._get_absolute_filesystem_path(path)).is_dir():
-            return True
-        return False
+class Directory(DirectoryBaseObject):
+    content_file_name = DIR_META_NAME
 
     @property
-    def dir_meta_path(self):
+    def absolute_content_file_path(self):
         return Path(self.absolute_filesystem_path) / DIR_META_NAME
 
     @auth_covered_method(action_name='dtcd_workspaces.read')
@@ -49,30 +38,11 @@ class Directory(DirectoryContent):
                 directory_content_list.append(dir_content)
         return directory_content_list
 
-    def load(self):
-        """
-        Load attributes from meta filename
-        """
-        if not self.absolute_filesystem_path.exists():
-            raise DirectoryContentException(
-                DirectoryContentException.DOES_NOT_EXIST, str(self.absolute_filesystem_path)
-            )
-        self._read_attributes_from_json_file(self.dir_meta_path)
-
     @classmethod
     def get(cls, path: str) -> 'Directory':
         directory = Directory(path, initialized_from_inside_class=True)
         directory.load()
         return directory
-
-    @authz_integration(authz_action='update', id_attr='id')
-    @auth_covered_method(action_name='dtcd_workspaces.update')
-    def save(self):
-        parent_dir_path = self.absolute_filesystem_path.parent
-        if not parent_dir_path.exists():
-            raise DirectoryContentException(DirectoryContentException.NO_DIR, str(parent_dir_path))
-        self.absolute_filesystem_path.mkdir(exist_ok=True)
-        self._write_attributes_to_json_file(self.dir_meta_path)
 
     @authz_integration(authz_action='delete', id_attr='id')
     @auth_covered_method(action_name='dtcd_workspaces.delete')
@@ -85,6 +55,3 @@ class Directory(DirectoryContent):
 
 
 DirectoryContent.register_child_class(Directory)
-
-
-

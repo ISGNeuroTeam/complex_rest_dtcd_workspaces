@@ -18,7 +18,7 @@ class Workspace(DirectoryContent):
     @classmethod
     def is_path_for_cls(cls, path: str) -> bool:
         """
-        Return True if class identify a workspace
+        Return True if path identify a workspace
         """
         try:
             cls._validate_path(path)
