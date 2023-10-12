@@ -92,7 +92,6 @@ docker_dev:
 	$(call clean_docker_containers)
 	@echo "Start develop..."
 	CURRENT_UID=$$(id -u):$$(id -g) docker-compose -f docker-compose-dev.yml up -d
-	$(call clean_docker_containers)
 
 docker_dev_stop:
 	CURRENT_UID=$$(id -u):$$(id -g) docker-compose -f docker-compose-dev.yml stop

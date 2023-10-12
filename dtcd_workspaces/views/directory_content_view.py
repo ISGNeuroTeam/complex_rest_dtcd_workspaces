@@ -54,13 +54,15 @@ class DirectoryContentView(APIView):
         action = request.GET.get('action', 'create')
         try:
             try:
-                return self.action_handlers[action](path, request, **kwargs)
+                action_method = self.action_handlers[action]
             except KeyError as err:
                 return ErrorResponse(
                     http_status=status.HTTP_400_BAD_REQUEST,
                     error_message='Action must be passed in query string, \
-                        Available actions are: ' + ', '.join(self.action_handlers.keys())
+                            Available actions are: ' + ', '.join(self.action_handlers.keys())
                 )
+            return action_method(path, request, **kwargs)
+
         except DirectoryContentException as err:
             return ErrorResponse(http_status=status.HTTP_400_BAD_REQUEST, error_message=str(err))
 
