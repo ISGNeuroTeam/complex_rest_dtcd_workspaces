@@ -91,6 +91,7 @@ docker_test: logs
 docker_dev:
 	$(call clean_docker_containers)
 	@echo "Start develop..."
+	mkdir -p ./logs
 	CURRENT_UID=$$(id -u):$$(id -g) docker-compose -f docker-compose-dev.yml up -d
 
 docker_dev_stop:
