@@ -10,7 +10,7 @@ from dtcd_workspaces.settings import WORKSPACE_BASE_PATH, WORKSPACE_TMP_PATH, DI
 from dtcd_workspaces.workspaces.directory import Directory
 from dtcd_workspaces.workspaces.workspace import Workspace
 from dtcd_workspaces.workspaces.utils import encode_name
-from dtcd_workspaces.workspaces.workspace import DirectoryContentException
+from dtcd_workspaces.workspaces.directorycontent_exception import DirectoryContentException
 
 
 class TestDirs(TransactionTestCase):

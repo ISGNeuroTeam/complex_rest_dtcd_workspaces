@@ -37,6 +37,9 @@ class DirectoryContent(IAuthCovered):
         'id', 'creation_time', 'modification_time', 'meta', 'keychain_id', 'owner_guid'
     ]
 
+    # objects may type postfix
+    object_type_postfix = None
+
     # --------------role model api methods--------------------
     keychain_model = DirectoryContentKeychain
 
@@ -185,8 +188,8 @@ class DirectoryContent(IAuthCovered):
         except IOError:
             raise DirectoryContentException(DirectoryContentException.IO_ERROR, absolute_filesystem_path)
 
-    @staticmethod
-    def _get_relative_filesystem_path(relative_human_readable_path: str) -> str:
+    @classmethod
+    def _get_relative_filesystem_path(cls, relative_human_readable_path: str) -> str:
         """
         Returns filesystem path
         """
@@ -194,7 +197,7 @@ class DirectoryContent(IAuthCovered):
             return os.sep.join(map(
                 lambda path_part: encode_name(path_part),
                 relative_human_readable_path.split('/')  # no os.sep because it's parameter
-            ))
+            )) + (f'_{cls.object_type_postfix}' if cls.object_type_postfix else '')
         except ValueError as err:
             raise DirectoryContentException(DirectoryContentException.INVALID_PATH, relative_human_readable_path)
 

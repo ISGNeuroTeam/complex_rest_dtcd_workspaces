@@ -92,6 +92,8 @@ docker_dev:
 	$(call clean_docker_containers)
 	@echo "Start develop..."
 	mkdir -p ./logs
+	cp ./docs/docker/dtcd_workspaces.conf ./dtcd_workspaces/
+	cp ./docs/docker/rest_keycloak.conf ./dtcd_workspaces/rest.conf
 	CURRENT_UID=$$(id -u):$$(id -g) docker-compose -f docker-compose-dev.yml up -d
 
 docker_dev_stop:
