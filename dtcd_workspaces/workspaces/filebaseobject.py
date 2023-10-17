@@ -17,7 +17,7 @@ class FileBaseObject(DirectoryContent):
             cls._validate_path(path)
         except DirectoryContentException:
             return False
-        absolute_filesystem_path = cls._get_absolute_filesystem_path(path)
+        absolute_filesystem_path: str = cls._get_absolute_filesystem_path(path)
 
         # check type postfix
         if absolute_filesystem_path.split('_')[-1] == cls.object_type_postfix:

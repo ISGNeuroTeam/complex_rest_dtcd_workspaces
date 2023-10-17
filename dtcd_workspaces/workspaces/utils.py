@@ -2,7 +2,9 @@ import base64
 import os
 import uuid
 import json
+
 from shutil import rmtree, copytree, copy2
+from copy import deepcopy
 
 from django.core.serializers.json import DjangoJSONEncoder
 
@@ -87,3 +89,18 @@ def _is_uuid4(text: str):
 def _get_file_name(file: Path) -> str:
     return file.with_suffix('').name
 
+def merge_dicts(first_dict, second_dict):
+    """
+    Merges two dicts. Returns new dictionary. First dict in priority
+    """
+    result_dict = deepcopy(second_dict)
+    for key, value in first_dict.items():
+        if isinstance(value, dict):
+            # get node or create one
+            node = result_dict.setdefault(key, {})
+            result_dict[key] = merge_dicts(value, node)
+        else:
+            if value:
+                result_dict[key] = value
+
+    return result_dict

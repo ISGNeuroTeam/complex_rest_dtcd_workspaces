@@ -46,6 +46,12 @@ ROLE_MODEL_AUTH_COVERED_CLASSES = {
         'dtcd_workspaces.delete',
         'dtcd_workspaces.move'
     ],
+    'dtcd_workspaces.workspaces.workspace_tab.WorkspaceTab': [
+        'dtcd_workspaces.read',
+        'dtcd_workspaces.create',
+        'dtcd_workspaces.update',
+        'dtcd_workspaces.delete',
+    ],
 
 }
 
