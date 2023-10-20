@@ -7,7 +7,8 @@ import datetime
 
 from typing import List
 from pathlib import Path
-
+from rest_auth.authorization import check_authorization
+from rest_auth.exceptions import AccessDeniedError
 from dtcd_workspaces.workspaces.directorycontent_exception import DirectoryContentException
 from dtcd_workspaces.workspaces.utils import decode_name, encode_name
 
@@ -122,6 +123,22 @@ class DirectoryContent(IAuthCovered):
             self.owner_guid = current_user.guid
         else:
             self.owner_guid = None
+
+    @property
+    def permissions(self):
+        """
+        Returns dictionary with permissions read, write, update, delete
+        """
+        # for every action check permission
+        action_names = self.get_actions_for_auth_obj()
+        permissions = {}
+        for action_name in action_names:
+            try:
+                check_authorization(self, action_name)
+            except AccessDeniedError as err:
+                permissions[action_name] = False
+            permissions[action_name] = True
+        return permissions
 
     @property
     def title(self) -> str:

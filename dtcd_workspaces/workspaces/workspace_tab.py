@@ -1,11 +1,11 @@
-from directory_content import DirectoryContent
+from .directory_content import DirectoryContent
 from .filebaseobject import FileBaseObject
 
 
 class WorkspaceTab(FileBaseObject):
     saved_to_file_attributes = DirectoryContent.saved_to_file_attributes + [
           'id', 'creation_time', 'modification_time', 'keychain_id', 'owner_guid',
-           'plugins', 'name', 'editName', 'tabPanel'
+           'plugins', 'name', 'editName'
     ]
     object_type_postfix = 'tab'
 
@@ -18,7 +18,6 @@ class WorkspaceTab(FileBaseObject):
         self.id = None
         self.isActive = None
         self.editName = None
-        self.tabPanel = None
         self.plugins = None
 
 

@@ -99,7 +99,6 @@ services:
     environment:
       - REST_CONF=/complex_rest/plugins/dtcd_workspaces/rest.conf
       - dtcd_workspaces_conf=/complex_rest/plugins/dtcd_workspaces/dtcd_workspaces.conf
-      - /work/complex_rest/complex_rest:/complex_rest/complex_rest
 
     user: ${CURRENT_UID}
     ports:
