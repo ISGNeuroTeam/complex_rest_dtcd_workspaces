@@ -137,7 +137,8 @@ class DirectoryContent(IAuthCovered):
                 check_authorization(self, action_name)
             except AccessDeniedError as err:
                 permissions[action_name] = False
-            permissions[action_name] = True
+            else:
+                permissions[action_name] = True
         return permissions
 
     @property
