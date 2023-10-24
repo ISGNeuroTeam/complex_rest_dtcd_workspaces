@@ -10,6 +10,7 @@ from rest_auth.apps import on_ready_actions as rest_auth_on_ready_actions
 from dtcd_workspaces.settings import WORKSPACE_BASE_PATH, WORKSPACE_TMP_PATH, DIR_META_NAME
 from dtcd_workspaces.workspaces.directory import Directory
 from dtcd_workspaces.workspaces.workspace import Workspace
+from dtcd_workspaces.views.serializers import WorkspaceSerializer
 from dtcd_workspaces.workspaces.directory_content import DirectoryContent
 
 from dtcd_workspaces.workspaces.utils import encode_name
@@ -77,6 +78,14 @@ class TestWorkspace(TransactionTestCase):
         workspace = Workspace.get(str(Path(test_directory_name) / test_workspace_name))
         self.assertDictEqual(self.test_meta_info, workspace.meta)
         self.assertDictEqual(self.test_content, workspace.content)
+
+    def test_create_workspace_with_tabs(self):
+        with open(Path(__file__).parent/'test_workspace_with_tabs.json') as f:
+            tab_dict = json.load(f)
+            tab_dict.update({'path': 'test_workspace_with_tabs'})
+        workspace_serializer = WorkspaceSerializer(data=tab_dict)
+        workspace_serializer.is_valid()
+        workspace = workspace_serializer.save()
 
     def test_create_workspace_in_root(self):
         workspace_name = 'workspace_in_root'

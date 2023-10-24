@@ -3,9 +3,9 @@ from .filebaseobject import FileBaseObject
 
 
 class WorkspaceTab(FileBaseObject):
-    saved_to_file_attributes = DirectoryContent.saved_to_file_attributes + [
+    saved_to_file_attributes = [
           'id', 'creation_time', 'modification_time', 'keychain_id', 'owner_guid',
-           'plugins', 'name', 'editName'
+          'editName'
     ]
     object_type_postfix = 'tab'
 

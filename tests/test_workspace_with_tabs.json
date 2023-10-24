@@ -1,0 +1,165 @@
+{
+  "content": {
+    "id": "5d04ab69-5195-4ec8-a683-d674351439bd",
+    "title": "WhatIf v0.7.0 Kazantsev",
+    "column": "24",
+    "editMode": false,
+    "plugins": [
+      {
+        "guid": "LogSystem_0_7_0",
+        "meta": {
+          "type": "core",
+          "title": "Система логирования",
+          "name": "LogSystem",
+          "version": "0.7.0",
+          "withDependencies": false,
+          "priority": 7
+        },
+        "config": null
+      },
+      {
+        "guid": "RouteSystem_0_4_0",
+        "meta": {
+          "type": "core",
+          "title": "Система роутинга",
+          "name": "RouteSystem",
+          "version": "0.4.0",
+          "withDependencies": false,
+          "priority": 0.9
+        },
+        "config": null
+      },
+      {
+        "guid": "LiveDashPanel_6",
+        "meta": {
+          "type": "panel",
+          "name": "LiveDashPanel",
+          "title": "Панель полотна примитивов",
+          "withDependencies": true,
+          "version": "0.16.0"
+        },
+        "config": {
+          "graphID": "",
+          "graphName": "",
+          "isPortLabelVisible": true,
+          "isMapLayerEnabled": false,
+          "mapLayerGeoCoordsProp": "geoCoords",
+          "mapLayerTileServer": "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+        },
+        "position": {
+          "h": 32,
+          "w": 12,
+          "x": 6,
+          "y": 0,
+          "tabId": "wss-tab-5959"
+        },
+        "toFixPanel": false
+      },
+      {
+        "guid": "PrimitivePropertiesPanel_7",
+        "meta": {
+          "version": "0.9.0",
+          "type": "panel",
+          "name": "PrimitivePropertiesPanel",
+          "title": "Панель свойств примитивов",
+          "withDependencies": true
+        },
+        "config": null,
+        "position": {
+          "h": 32,
+          "w": 6,
+          "x": 18,
+          "y": 0,
+          "tabId": "wss-tab-5959"
+        },
+        "toFixPanel": false
+      }
+    ],
+    "tabPanelsConfig": {
+      "editMode": false,
+      "visibleNavBar": true,
+      "tabsOptions": [
+        {
+          "id": "wss-tab-5720",
+          "name": "Monitoring",
+          "isActive": false,
+          "editName": false,
+          "tabPanel": {}
+        },
+        {
+          "id": "wss-tab-9078",
+          "name": "What-If",
+          "isActive": false,
+          "editName": false,
+          "tabPanel": {}
+        },
+        {
+          "id": "wss-tab-1947",
+          "name": "Measures",
+          "isActive": false,
+          "editName": false,
+          "tabPanel": {}
+        },
+        {
+          "id": "wss-tab-5465",
+          "name": "PPD Monitoring",
+          "isActive": false,
+          "editName": false,
+          "tabPanel": {}
+        },
+        {
+          "id": "wss-tab-9479",
+          "name": "PPD What-If",
+          "isActive": false,
+          "editName": false,
+          "tabPanel": {}
+        },
+        {
+          "id": "wss-tab-5058",
+          "name": "PPD Measures",
+          "isActive": false,
+          "editName": false,
+          "tabPanel": {}
+        },
+        {
+          "id": "wss-tab-5959",
+          "name": "OCF_clc",
+          "isActive": true,
+          "editName": false,
+          "tabPanel": {}
+        },
+        {
+          "id": "wss-tab-5319",
+          "name": "control",
+          "isActive": false,
+          "editName": false,
+          "tabPanel": {}
+        }
+      ]
+    },
+    "visibleTabNavBar": true,
+    "panelBorderWidth": "2px",
+    "panelBorderStyle": "solid",
+    "panelBorderColor": "var(--background_secondary)"
+  },
+  "id": "5d04ab69-5195-4ec8-a683-d674351439bd",
+  "title": "WhatIf v0.7.0 Kazantsev",
+  "path": "",
+  "meta": {
+    "description": "",
+    "icon": 21,
+    "color": [
+      9
+    ]
+  },
+  "creation_time": 1679400074.338925,
+  "modification_time": 1680165328.0234697,
+  "is_dir": false,
+  "permissions": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  },
+  "plugin": "dtcd_workspaces"
+}

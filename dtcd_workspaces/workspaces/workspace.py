@@ -1,4 +1,6 @@
 from collections import defaultdict
+from pathlib import Path
+from dtcd_workspaces.settings import WORKSPACE_BASE_PATH
 from rest_auth.authorization import auth_covered_method, authz_integration
 
 from .utils import remove
@@ -38,13 +40,23 @@ class Workspace(DirectoryBaseObject):
                 DirectoryContentException.DOES_NOT_EXIST, str(self.absolute_filesystem_path)
             )
         self._read_attributes_from_json_file(self.absolute_content_file_path)
-        # traverse through tabs and make tabsOption
-        # for p in self.absolute_filesystem_path.iterdir():
-        #     if WorkspaceTab.is_path_for_cls(str(p)):
-        #         workspace_tab = WorkspaceTab.get(str(p))
-        #
-        #         # if 'plugins' in self.content:
-        #         #     self.content['plugins'].extend(workspace_tab.plugins)
+        self._load_tabs()
+
+    def _load_tabs(self):
+        if 'tabPanelsConfig' not in self.content:
+            return
+        tabs_list:list = self.content['tabPanelsConfig']['tabsOptions']
+        # iterdir workspace dir and update or delete tabs
+        for tab_abs_path in self.absolute_filesystem_path.iterdir():
+            tab_path = tab_abs_path.relative_to(WORKSPACE_BASE_PATH)
+            if WorkspaceTab.is_path_for_cls(str(tab_path)):
+                tab = WorkspaceTab.get(str(tab_path))
+                tabs_list.append({
+                    'id': tab.id,
+                    'isActive': tab.isActive,
+                    'editName': tab.editName,
+                    'permissions': tab.permissions
+                })
 
     @authz_integration(authz_action='update', id_attr='id')
     @auth_covered_method(action_name='dtcd_workspaces.update')
@@ -53,21 +65,38 @@ class Workspace(DirectoryBaseObject):
         if not parent_dir_path.exists():
             raise DirectoryContentException(DirectoryContentException.NO_DIR, str(parent_dir_path))
         self.absolute_filesystem_path.mkdir(exist_ok=True)
-        # # parse content and create tabs objects
-        # tabs_plugins = defaultdict(list)
-        # if 'plugins' in self.content:
-        #     for plugin in self.content['plugins']:
-        #         if 'position' in plugin and plugin['position'] is not None:
-        #             tabs_plugins[plugin['position']['tabId']].append(plugin)
-        # for tab_info in self.content['tabPanelsConfig']['tabsOptions']:
-        #     # todo make update or create
-        #     tab = WorkspaceTab.create(
-        #         self.path + '/' + tab_info['id'],
-        #         id = tab_info['id'],
-        #         isActive=tab_info['isActive'],
-        #         editName=tab_info['editName'],
-        #     )
+        self._save_tabs()
         self._write_attributes_to_json_file(self.absolute_content_file_path)
+
+    def _save_tabs(self):
+        # go through options and create tab dict
+        tabs_dict = {}
+        if 'tabPanelsConfig' in self.content:
+            for tab_info in self.content['tabPanelsConfig']['tabsOptions']:
+                tabs_dict[tab_info['id']] = tab_info
+
+        # iterdir workspace dir and update or delete tabs
+        for tab_abs_path in self.absolute_filesystem_path.iterdir():
+            tab_path = tab_abs_path.relative_to(WORKSPACE_BASE_PATH)
+            if WorkspaceTab.is_path_for_cls(str(tab_path)):
+                tab = WorkspaceTab.get(str(tab_path))
+                if tab.id not in tabs_dict:
+                    tab.delete()
+                else:  # update
+                    tab_info = tabs_dict.pop(tab.id)
+                    for tab_attr in ('isActive', 'editName'):
+                        setattr(tab, tab_attr, tabs_dict[tab.id][tab_attr])
+                    tab.save()
+
+        # create tabs that don't exist
+        for tab_id, tab_info in tabs_dict.items():
+            tab_path = f'{self.path}/{tab_id}'
+            tab = WorkspaceTab.create(
+                tab_path,
+                id=tab_info['id'],
+                isActive=tab_info['isActive'],
+                editName=tab_info['editName'],
+            )
 
 DirectoryContent.register_child_class(Workspace)
 
