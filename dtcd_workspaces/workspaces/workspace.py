@@ -43,21 +43,27 @@ class Workspace(DirectoryBaseObject):
         self._load_tabs()
 
     def _load_tabs(self):
-        if 'tabPanelsConfig' not in self.content:
+        if self.content is None or 'tabPanelsConfig' not in self.content:
             return
+        self.content['tabPanelsConfig']['tabsOptions'] = []
         tabs_list:list = self.content['tabPanelsConfig']['tabsOptions']
         # iterdir workspace dir and update or delete tabs
         for tab_abs_path in self.absolute_filesystem_path.iterdir():
-            tab_path = tab_abs_path.relative_to(WORKSPACE_BASE_PATH)
+            tab_filesystem_rel_path = str(tab_abs_path.relative_to(WORKSPACE_BASE_PATH))
+            tab_filesystem_rel_path = tab_filesystem_rel_path.rstrip('_tab')
+            try:
+                tab_path = self._get_relative_humanreadable_path(tab_filesystem_rel_path)
+            except DirectoryContentException: # skip not encoded strings
+                continue
             if WorkspaceTab.is_path_for_cls(str(tab_path)):
-                tab = WorkspaceTab.get(str(tab_path))
+                tab:WorkspaceTab = WorkspaceTab.get(str(tab_path))
                 tabs_list.append({
                     'id': tab.id,
                     'isActive': tab.isActive,
                     'editName': tab.editName,
+                    'name': tab.name,
                     'permissions': tab.permissions
                 })
-
     @authz_integration(authz_action='update', id_attr='id')
     @auth_covered_method(action_name='dtcd_workspaces.update')
     def save(self):
@@ -71,20 +77,27 @@ class Workspace(DirectoryBaseObject):
     def _save_tabs(self):
         # go through options and create tab dict
         tabs_dict = {}
-        if 'tabPanelsConfig' in self.content:
-            for tab_info in self.content['tabPanelsConfig']['tabsOptions']:
-                tabs_dict[tab_info['id']] = tab_info
+        if self.content is None or  'tabPanelsConfig' not in self.content:
+            return
+
+        for tab_info in self.content['tabPanelsConfig']['tabsOptions']:
+            tabs_dict[tab_info['id']] = tab_info
 
         # iterdir workspace dir and update or delete tabs
         for tab_abs_path in self.absolute_filesystem_path.iterdir():
-            tab_path = tab_abs_path.relative_to(WORKSPACE_BASE_PATH)
+            tab_filesystem_rel_path = str(tab_abs_path.relative_to(WORKSPACE_BASE_PATH))
+            tab_filesystem_rel_path = tab_filesystem_rel_path.rstrip('_tab')
+            try:
+                tab_path = self._get_relative_humanreadable_path(tab_filesystem_rel_path)
+            except DirectoryContentException: # skip not encoded strings
+                continue
             if WorkspaceTab.is_path_for_cls(str(tab_path)):
                 tab = WorkspaceTab.get(str(tab_path))
                 if tab.id not in tabs_dict:
                     tab.delete()
                 else:  # update
                     tab_info = tabs_dict.pop(tab.id)
-                    for tab_attr in ('isActive', 'editName'):
+                    for tab_attr in ('isActive', 'editName', 'name', 'id'):
                         setattr(tab, tab_attr, tabs_dict[tab.id][tab_attr])
                     tab.save()
 
@@ -96,7 +109,10 @@ class Workspace(DirectoryBaseObject):
                 id=tab_info['id'],
                 isActive=tab_info['isActive'],
                 editName=tab_info['editName'],
+                name=tab_info['name']
             )
+        self.content['tabPanelsConfig']['tabsOptions'] = []
+
 
 DirectoryContent.register_child_class(Workspace)
 

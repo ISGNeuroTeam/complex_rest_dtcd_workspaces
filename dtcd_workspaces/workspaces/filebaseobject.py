@@ -17,12 +17,9 @@ class FileBaseObject(DirectoryContent):
             cls._validate_path(path)
         except DirectoryContentException:
             return False
-        absolute_filesystem_path: str = cls._get_absolute_filesystem_path(path)
-
-        # check type postfix
-        if absolute_filesystem_path.split('_')[-1] == cls.object_type_postfix:
-            if not Path(absolute_filesystem_path).is_dir():
-                return True
+        absolute_filesystem_path = Path(cls._get_absolute_filesystem_path(path))
+        if absolute_filesystem_path.is_file():
+            return True
         return False
 
     @authz_integration(authz_action='update', id_attr='id')

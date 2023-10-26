@@ -5,7 +5,7 @@ from .filebaseobject import FileBaseObject
 class WorkspaceTab(FileBaseObject):
     saved_to_file_attributes = [
           'id', 'creation_time', 'modification_time', 'keychain_id', 'owner_guid',
-          'editName'
+          'editName', 'name', 'isActive'
     ]
     object_type_postfix = 'tab'
 
@@ -18,8 +18,11 @@ class WorkspaceTab(FileBaseObject):
         self.id = None
         self.isActive = None
         self.editName = None
-        self.plugins = None
+        self.name = None
 
+    @property
+    def title(self) -> str:
+        return self.name
 
 DirectoryContent.register_child_class(WorkspaceTab)
 

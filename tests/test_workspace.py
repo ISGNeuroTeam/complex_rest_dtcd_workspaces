@@ -10,6 +10,7 @@ from rest_auth.apps import on_ready_actions as rest_auth_on_ready_actions
 from dtcd_workspaces.settings import WORKSPACE_BASE_PATH, WORKSPACE_TMP_PATH, DIR_META_NAME
 from dtcd_workspaces.workspaces.directory import Directory
 from dtcd_workspaces.workspaces.workspace import Workspace
+from dtcd_workspaces.workspaces.workspace_tab import WorkspaceTab
 from dtcd_workspaces.views.serializers import WorkspaceSerializer
 from dtcd_workspaces.workspaces.directory_content import DirectoryContent
 
@@ -79,13 +80,23 @@ class TestWorkspace(TransactionTestCase):
         self.assertDictEqual(self.test_meta_info, workspace.meta)
         self.assertDictEqual(self.test_content, workspace.content)
 
-    def test_create_workspace_with_tabs(self):
+    def test_create_and_get_workspace_with_tabs(self):
+        test_workspace_name = 'test_workspace_with_tabs'
         with open(Path(__file__).parent/'test_workspace_with_tabs.json') as f:
             tab_dict = json.load(f)
-            tab_dict.update({'path': 'test_workspace_with_tabs'})
+            tab_dict.update({'path': test_workspace_name})
         workspace_serializer = WorkspaceSerializer(data=tab_dict)
         workspace_serializer.is_valid()
         workspace = workspace_serializer.save()
+        # check tab exist
+        test_tab_path = test_workspace_name + '/' + 'wss-tab-1947'
+        workspace_tab = WorkspaceTab.get(test_tab_path)
+        self.assertEqual(workspace_tab.name, 'Measures')
+        test_workspace = Workspace.get(test_workspace_name)
+        workspace_dct = WorkspaceSerializer(test_workspace).data
+        tabs_list = workspace_dct['content']['tabPanelsConfig']['tabsOptions']
+        tab_dict = next(filter(lambda td: td['id'] == 'wss-tab-1947', tabs_list))
+        self.assertEqual(tab_dict['name'], 'Measures')
 
     def test_create_workspace_in_root(self):
         workspace_name = 'workspace_in_root'

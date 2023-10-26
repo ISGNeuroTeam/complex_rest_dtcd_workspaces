@@ -155,7 +155,7 @@ class DirectoryContent(IAuthCovered):
 
     @classmethod
     def _get_absolute_filesystem_path(cls, path: str) -> str:
-        return str(Path(WORKSPACE_BASE_PATH) / DirectoryContent._get_relative_filesystem_path(path))
+        return str(Path(WORKSPACE_BASE_PATH) / cls._get_relative_filesystem_path(path))
 
     def _write_attributes_to_json_file(self, absolute_file_path: Path):
         if self.creation_time is None:
@@ -251,7 +251,8 @@ class DirectoryContent(IAuthCovered):
         directory_content_instance: DirectoryContent = cls(path)
         for attr_name in kwargs:
             setattr(directory_content_instance, attr_name, kwargs[attr_name])
-        directory_content_instance.id = uuid.uuid4()
+        if directory_content_instance.id is None:
+            directory_content_instance.id = uuid.uuid4()
         directory_content_instance.save(ignore_authorization=True)
         return directory_content_instance
 
