@@ -3,6 +3,7 @@ from .filebaseobject import FileBaseObject
 
 
 class WorkspaceTab(FileBaseObject):
+    check_permissions_in_auth_covered_methods = False
     saved_to_file_attributes = [
           'id', 'creation_time', 'modification_time', 'keychain_id', 'owner_guid',
           'editName', 'name', 'isActive'
