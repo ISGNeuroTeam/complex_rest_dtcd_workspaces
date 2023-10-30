@@ -15,14 +15,14 @@ class Workspace(DirectoryBaseObject):
         'content',
     ]
 
-    def __init__(self, path: str, initialized_from_inside_class=False):
-        super().__init__(path, initialized_from_inside_class)
+    def __init__(self, path: str):
+        super().__init__(path)
         self.content = None
 
 
     @classmethod
     def get(cls, path: str):
-        workspace = Workspace(path, initialized_from_inside_class=True)
+        workspace = Workspace(path)
         workspace.load()
         return workspace
 

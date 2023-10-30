@@ -9,8 +9,8 @@ class DirectoryBaseObject(DirectoryContent):
     # must be redefined in child classes
     content_file_name = None
 
-    def __init__(self, path: str, initialized_from_inside_class=False):
-        super().__init__(path, initialized_from_inside_class)
+    def __init__(self, path: str):
+        super().__init__(path)
 
     @classmethod
     def is_path_for_cls(cls, path: str) -> bool:

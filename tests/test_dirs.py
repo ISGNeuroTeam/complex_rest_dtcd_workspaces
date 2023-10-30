@@ -135,10 +135,10 @@ class TestDirs(TransactionTestCase):
         self.assertDictEqual(directory.meta, meta)
 
     def test_dir_exist(self):
-        test_dir = Directory('test')
+        test_dir = Directory.create('test')
         test_dir.save()
 
         with self.assertRaises(DirectoryContentException):
-            test_dir = Directory('test')
+            test_dir = Directory.create('test')
             test_dir.save()
 

@@ -42,7 +42,7 @@ class FileBaseObject(DirectoryContent):
 
     @classmethod
     def get(cls, path: str):
-        file_base_object = cls(path, initialized_from_inside_class=True)
+        file_base_object = cls(path)
         file_base_object.load()
         return file_base_object
 

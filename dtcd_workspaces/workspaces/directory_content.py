@@ -94,12 +94,10 @@ class DirectoryContent(IAuthCovered):
         """
         raise NotImplementedError
 
-    def __init__(self, path: str, initialized_from_inside_class=False):
+    def __init__(self, path: str):
         """
         Args:
             path (str): Human readable relative path
-            initialized_from_inside_class (bool): Flag, initialization from get class method
-                if initialized_from_inside_class=False then object didn't exist before
         """
         self.path: str = self._validate_path(path)
         self.creation_time: float = None
@@ -108,9 +106,6 @@ class DirectoryContent(IAuthCovered):
         self.owner_guid = None
         self.keychain_id = None
         self.id = None
-
-        if not initialized_from_inside_class: # directory content object created for the first time
-            self._create_actions(path)
 
     def _create_actions(self, path):
         # use get method to get existing directory content
@@ -249,6 +244,7 @@ class DirectoryContent(IAuthCovered):
     @auth_covered_func(action_name='dtcd_workspaces.create')
     def create(cls, path: str, **kwargs):
         directory_content_instance: DirectoryContent = cls(path)
+        directory_content_instance._create_actions(path)
         for attr_name in kwargs:
             setattr(directory_content_instance, attr_name, kwargs[attr_name])
         if directory_content_instance.id is None:

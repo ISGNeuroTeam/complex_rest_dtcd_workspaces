@@ -40,7 +40,7 @@ class Directory(DirectoryBaseObject):
 
     @classmethod
     def get(cls, path: str) -> 'Directory':
-        directory = Directory(path, initialized_from_inside_class=True)
+        directory = Directory(path)
         directory.load()
         return directory
 

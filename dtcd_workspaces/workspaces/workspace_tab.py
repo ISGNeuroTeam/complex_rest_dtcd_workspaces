@@ -10,7 +10,7 @@ class WorkspaceTab(FileBaseObject):
     ]
     object_type_postfix = 'tab'
 
-    def __init__(self, path: str, initialized_from_inside_class=False):
+    def __init__(self, path: str):
         self.path: str = self._validate_path(path)
         self.creation_time: float = None
         self.modification_time: float = None
