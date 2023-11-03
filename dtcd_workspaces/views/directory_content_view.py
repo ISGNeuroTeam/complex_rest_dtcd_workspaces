@@ -76,10 +76,10 @@ class DirectoryContentView(APIView):
         return Response(data=self.serializer_class(directory_content).data, status=status.HTTP_200_OK)
 
     def _create(self, path, request, **kwargs):
-        directory_dct = dict(request.data)
-        directory_dct.update({'path': path})
+        directory_content_dct = dict(request.data)
+        directory_content_dct.update({'path': path})
         directory_content_serializer = self.serializer_class(
-            data=directory_dct
+            data=directory_content_dct
         )
         if directory_content_serializer.is_valid():
             new_dir = directory_content_serializer.save()
@@ -93,7 +93,9 @@ class DirectoryContentView(APIView):
 
     def _update(self, path, request, **kwargs):
         directory_content = self.directory_content_class.get(path)
-        directory_content_serializer = self.serializer_class(directory_content, data=request.data, partial=True)
+        directory_content_dct = dict(request.data)
+        directory_content_dct.update({'path': path})
+        directory_content_serializer = self.serializer_class(directory_content, data=directory_content_dct, partial=True)
         if directory_content_serializer.is_valid():
             directory_content_serializer.save()
         else:

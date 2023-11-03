@@ -28,7 +28,7 @@ class Directory(DirectoryBaseObject):
             if not item.name == DIR_META_NAME:
                 try:
                     dir_content = DirectoryContent.get(
-                        self._get_relative_humanreadable_path(
+                        self.get_relative_humanreadable_path(
                             str(item.relative_to(WORKSPACE_BASE_PATH))
                         )
                     )

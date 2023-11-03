@@ -52,7 +52,7 @@ class Workspace(DirectoryBaseObject):
             tab_filesystem_rel_path = str(tab_abs_path.relative_to(WORKSPACE_BASE_PATH))
             tab_filesystem_rel_path = tab_filesystem_rel_path.rstrip('_tab')
             try:
-                tab_path = self._get_relative_humanreadable_path(tab_filesystem_rel_path)
+                tab_path = self.get_relative_humanreadable_path(tab_filesystem_rel_path)
             except DirectoryContentException: # skip not encoded strings
                 continue
             if WorkspaceTab.is_path_for_cls(str(tab_path)):
@@ -88,7 +88,7 @@ class Workspace(DirectoryBaseObject):
             tab_filesystem_rel_path = str(tab_abs_path.relative_to(WORKSPACE_BASE_PATH))
             tab_filesystem_rel_path = tab_filesystem_rel_path.rstrip('_tab')
             try:
-                tab_path = self._get_relative_humanreadable_path(tab_filesystem_rel_path)
+                tab_path = self.get_relative_humanreadable_path(tab_filesystem_rel_path)
             except DirectoryContentException: # skip not encoded strings
                 continue
             if WorkspaceTab.is_path_for_cls(str(tab_path)):
@@ -98,7 +98,7 @@ class Workspace(DirectoryBaseObject):
                 else:  # update
                     tab_info = tabs_dict.pop(tab.id)
                     for tab_attr in ('isActive', 'editName', 'name', 'id'):
-                        setattr(tab, tab_attr, tabs_dict[tab.id][tab_attr])
+                        setattr(tab, tab_attr, tab_info[tab_attr])
                     tab.save()
 
         # create tabs that don't exist

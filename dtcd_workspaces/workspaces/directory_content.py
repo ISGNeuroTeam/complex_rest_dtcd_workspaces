@@ -215,7 +215,7 @@ class DirectoryContent(IAuthCovered):
             raise DirectoryContentException(DirectoryContentException.INVALID_PATH, relative_human_readable_path)
 
     @staticmethod
-    def _get_relative_humanreadable_path(relative_filesystem_path: str) -> str:
+    def get_relative_humanreadable_path(relative_filesystem_path: str) -> str:
         """
         Returns humanreadable path relative to root workspace directory
         """
