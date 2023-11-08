@@ -367,6 +367,19 @@
     }
   },
   "groups" : [ {
+    "id" : "79a4717b-04b4-461d-a3d1-87bcc9cbabe5",
+    "name" : "admin",
+    "path" : "/admin",
+    "attributes" : { },
+    "realmRoles" : [ "uma_authorization", "default-roles-wdcplatform", "role2", "creators", "offline_access", "role1" ],
+    "clientRoles" : {
+      "realm-management" : [ "view-events", "manage-users", "manage-events", "query-groups", "manage-identity-providers", "view-authorization", "view-realm", "view-users", "query-clients", "impersonation", "query-realms", "create-client", "manage-authorization", "manage-realm", "manage-clients", "realm-admin", "view-identity-providers", "view-clients", "query-users" ],
+      "broker" : [ "read-token" ],
+      "account" : [ "manage-consent", "view-consent", "view-profile", "delete-account", "view-applications", "manage-account", "view-groups", "manage-account-links" ],
+      "complex_rest" : [ "uma_protection" ]
+    },
+    "subGroups" : [ ]
+  }, {
     "id" : "fbc4557b-88d2-4300-abf8-68797fdc4ea8",
     "name" : "admin_staff",
     "path" : "/admin_staff",
@@ -407,7 +420,7 @@
   "otpPolicyLookAheadWindow" : 1,
   "otpPolicyPeriod" : 30,
   "otpPolicyCodeReusable" : false,
-  "otpSupportedApplications" : [ "totpAppGoogleName", "totpAppMicrosoftAuthenticatorName", "totpAppFreeOTPName" ],
+  "otpSupportedApplications" : [ "totpAppMicrosoftAuthenticatorName", "totpAppFreeOTPName", "totpAppGoogleName" ],
   "webAuthnPolicyRpEntityName" : "keycloak",
   "webAuthnPolicySignatureAlgorithms" : [ "ES256" ],
   "webAuthnPolicyRpId" : "",
@@ -753,6 +766,26 @@
         "_id" : "0fa8d852-0f9f-4110-a1f8-6b5e5f8a2a0e",
         "uris" : [ ],
         "scopes" : [ {
+          "name" : "dtcd_workspaces.create"
+        }, {
+          "name" : "dtcd_workspaces.read"
+        }, {
+          "name" : "dtcd_workspaces.update"
+        }, {
+          "name" : "dtcd_workspaces.delete"
+        } ],
+        "icon_uri" : ""
+      }, {
+        "name" : "dtcd_workspaces.Directory:$root_directory$",
+        "type" : "dtcd_workspaces.Directory",
+        "ownerManagedAccess" : false,
+        "displayName" : "dtcd_workspaces.Directory:$root_directory$",
+        "attributes" : { },
+        "_id" : "6d4a84ba-f411-4ac6-8b01-85d5ed620cf5",
+        "uris" : [ ],
+        "scopes" : [ {
+          "name" : "dtcd_workspaces.move"
+        }, {
           "name" : "dtcd_workspaces.create"
         }, {
           "name" : "dtcd_workspaces.read"
@@ -1592,7 +1625,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-usermodel-property-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-attribute-mapper", "saml-user-property-mapper", "oidc-full-name-mapper", "oidc-address-mapper", "saml-user-attribute-mapper", "saml-role-list-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-role-list-mapper", "oidc-usermodel-property-mapper", "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper", "oidc-full-name-mapper" ]
       }
     }, {
       "id" : "62952a7f-77c9-4164-a952-ad144e178170",
@@ -1619,7 +1652,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-attribute-mapper", "oidc-usermodel-property-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "saml-user-property-mapper", "saml-role-list-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-sha256-pairwise-sub-mapper", "saml-user-property-mapper", "oidc-usermodel-attribute-mapper", "oidc-address-mapper", "saml-user-attribute-mapper", "oidc-full-name-mapper", "saml-role-list-mapper", "oidc-usermodel-property-mapper" ]
       }
     } ],
     "org.keycloak.storage.UserStorageProvider" : [ {
@@ -1670,10 +1703,10 @@
             "groups.dn" : [ "ou=people,dc=planetexpress,dc=com" ],
             "mode" : [ "READ_ONLY" ],
             "user.roles.retrieve.strategy" : [ "LOAD_GROUPS_BY_MEMBER_ATTRIBUTE" ],
-            "ignore.missing.groups" : [ "false" ],
             "membership.ldap.attribute" : [ "member" ],
-            "memberof.ldap.attribute" : [ "memberOf" ],
+            "ignore.missing.groups" : [ "false" ],
             "group.object.classes" : [ "Group" ],
+            "memberof.ldap.attribute" : [ "memberOf" ],
             "drop.non.existing.groups.during.sync" : [ "false" ],
             "groups.path" : [ "/" ]
           }
@@ -1685,8 +1718,8 @@
           "config" : {
             "ldap.attribute" : [ "whenChanged" ],
             "is.mandatory.in.ldap" : [ "false" ],
-            "read.only" : [ "true" ],
             "always.read.value.from.ldap" : [ "true" ],
+            "read.only" : [ "true" ],
             "user.model.attribute" : [ "modifyTimestamp" ]
           }
         }, {
@@ -1707,8 +1740,8 @@
           "config" : {
             "ldap.attribute" : [ "uid" ],
             "is.mandatory.in.ldap" : [ "true" ],
-            "read.only" : [ "true" ],
             "always.read.value.from.ldap" : [ "false" ],
+            "read.only" : [ "true" ],
             "user.model.attribute" : [ "username" ]
           }
         }, {
@@ -1719,8 +1752,8 @@
           "config" : {
             "ldap.attribute" : [ "mail" ],
             "is.mandatory.in.ldap" : [ "false" ],
-            "read.only" : [ "true" ],
             "always.read.value.from.ldap" : [ "false" ],
+            "read.only" : [ "true" ],
             "user.model.attribute" : [ "email" ]
           }
         } ]
@@ -1735,8 +1768,8 @@
         "useKerberosForPasswordAuthentication" : [ "false" ],
         "importEnabled" : [ "true" ],
         "enabled" : [ "true" ],
-        "usernameLDAPAttribute" : [ "uid" ],
         "bindCredential" : [ "GoodNewsEveryone" ],
+        "usernameLDAPAttribute" : [ "uid" ],
         "bindDn" : [ "cn=admin,dc=planetexpress,dc=com" ],
         "changedSyncPeriod" : [ "-1" ],
         "lastSync" : [ "1693349879" ],

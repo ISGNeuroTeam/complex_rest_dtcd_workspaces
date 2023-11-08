@@ -71,8 +71,8 @@ class Workspace(DirectoryBaseObject):
         if not parent_dir_path.exists():
             raise DirectoryContentException(DirectoryContentException.NO_DIR, str(parent_dir_path))
         self.absolute_filesystem_path.mkdir(exist_ok=True)
-        self._save_tabs()
         self._write_attributes_to_json_file(self.absolute_content_file_path)
+        self._save_tabs()
 
     def _save_tabs(self):
         # go through options and create tab dict

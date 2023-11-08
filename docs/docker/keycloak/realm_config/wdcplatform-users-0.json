@@ -1,6 +1,21 @@
 {
   "realm" : "wdcplatform",
   "users" : [ {
+    "id" : "52540440-2a83-4587-ad10-202df4c31095",
+    "createdTimestamp" : 1699430195897,
+    "username" : "admin",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : true,
+    "firstName" : "",
+    "lastName" : "",
+    "credentials" : [ ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-wdcplatform" ],
+    "notBefore" : 0,
+    "groups" : [ "/admin" ]
+  }, {
     "id" : "419f04b7-6283-4cfb-bd6d-26c65e3e6514",
     "createdTimestamp" : 1693347934991,
     "username" : "amy",

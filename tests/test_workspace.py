@@ -50,6 +50,17 @@ class TestWorkspace(TransactionTestCase):
         Path(WORKSPACE_BASE_PATH).mkdir(exist_ok=True, parents=True)
         Path(WORKSPACE_TMP_PATH).mkdir(exist_ok=True, parents=True)
 
+        directory_root_meta_path = Path(WORKSPACE_BASE_PATH) / DIR_META_NAME
+        with open(directory_root_meta_path, 'w') as fw:
+            fw.write(
+                json.dumps(
+                    {
+                        "id": "6d4a84ba-f411-4ac6-8b01-85d5ed620cf5",
+                        "owner_guid": "52540440-2a83-4587-ad10-202df4c31095",
+                        "meta": {'root_meta': 'some_root_meta'}
+                    })
+            )
+
     def tearDown(self) -> None:
         shutil.rmtree(WORKSPACE_TMP_PATH)
         shutil.rmtree(WORKSPACE_BASE_PATH)

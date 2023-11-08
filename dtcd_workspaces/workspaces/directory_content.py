@@ -1,5 +1,6 @@
-import base64
 import logging
+import base64
+
 import os
 import json
 import uuid
@@ -7,7 +8,7 @@ import datetime
 
 from typing import List
 from pathlib import Path
-from rest_auth.authorization import check_authorization
+from rest_auth.authorization import check_authorization, ignore_authorization_decorator
 from rest_auth.exceptions import AccessDeniedError
 from dtcd_workspaces.workspaces.directorycontent_exception import DirectoryContentException
 from dtcd_workspaces.workspaces.utils import decode_name, encode_name
@@ -46,10 +47,14 @@ class DirectoryContent(IAuthCovered):
 
     @property
     def auth_id(self):
+        if self.path=="":
+            return "$root_directory$"
         return self.path
 
     @property
     def auth_name(self) -> str:
+        if self.path=="":
+            return "$root_directory$"
         return self.path
 
     @property
@@ -112,12 +117,29 @@ class DirectoryContent(IAuthCovered):
         if self.absolute_filesystem_path.exists():
             raise DirectoryContentException(DirectoryContentException.PATH_EXISTS, path)
 
+        directory = self._get_parent_object()
+        directory.create_inside_actions()
+
         # when first creation owner is current user
         current_user = global_vars.get_current_user()
         if current_user:
             self.owner_guid = current_user.guid
         else:
             self.owner_guid = None
+
+    @auth_covered_method(action_name='dtcd_workspaces.create')
+    def create_inside_actions(self):
+        """
+        Method must be invoked when creation inside object is happening
+        """
+        pass
+
+    @ignore_authorization_decorator
+    def _get_parent_object(self) -> 'DirectoryContent':
+        parent_path = str(Path(self.path).parent)
+        if parent_path == '.':
+            parent_path = ''
+        return DirectoryContent.get(parent_path)
 
     @property
     def permissions(self):
@@ -241,7 +263,6 @@ class DirectoryContent(IAuthCovered):
 
     @classmethod
     @authz_integration(authz_action='create', id_attr='id')
-    @auth_covered_func(action_name='dtcd_workspaces.create')
     def create(cls, path: str, **kwargs):
         directory_content_instance: DirectoryContent = cls(path)
         directory_content_instance._create_actions(path)
