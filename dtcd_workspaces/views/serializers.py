@@ -16,6 +16,11 @@ class DirectoryContentSerializer(serializers.Serializer):
     class Meta:
         read_only_fields = ('creation_time', 'modification_time')
 
+class DirectoryContentShortSerializer(serializers.Serializer):
+    path = serializers.CharField(max_length=2048)
+    id = serializers.UUIDField(read_only=True)
+    permissions = serializers.DictField(read_only=True)
+    title = serializers.CharField(max_length=255, read_only=True)
 
 class DirectorySerializer(DirectoryContentSerializer):
     def create(self, validated_data):
