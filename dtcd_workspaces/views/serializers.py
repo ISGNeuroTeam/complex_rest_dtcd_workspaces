@@ -21,6 +21,7 @@ class DirectoryContentShortSerializer(serializers.Serializer):
     id = serializers.UUIDField(read_only=True)
     permissions = serializers.DictField(read_only=True)
     title = serializers.CharField(max_length=255, read_only=True)
+    meta = serializers.DictField()
 
 class DirectorySerializer(DirectoryContentSerializer):
     def create(self, validated_data):
