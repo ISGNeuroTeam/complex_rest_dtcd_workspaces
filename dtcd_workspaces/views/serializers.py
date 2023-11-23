@@ -19,6 +19,8 @@ class DirectoryContentSerializer(serializers.Serializer):
 class DirectoryContentShortSerializer(serializers.Serializer):
     path = serializers.CharField(max_length=2048)
     id = serializers.UUIDField(read_only=True)
+    creation_time = serializers.FloatField(read_only=True)
+    modification_time = serializers.FloatField(read_only=True)
     permissions = serializers.DictField(read_only=True)
     title = serializers.CharField(max_length=255, read_only=True)
     meta = serializers.DictField()
