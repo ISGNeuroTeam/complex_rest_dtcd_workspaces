@@ -9,7 +9,7 @@ from .directorycontent_exception import DirectoryContentException
 from .directory_content import DirectoryContent
 from ..settings import DIR_META_NAME, WORKSPACE_BASE_PATH
 from .directory_base_object import DirectoryBaseObject
-
+from rest_auth.exceptions import AccessDeniedError
 
 class Directory(DirectoryBaseObject):
     content_file_name = DIR_META_NAME
@@ -35,6 +35,9 @@ class Directory(DirectoryBaseObject):
                 except DirectoryContentException as err:
                     logging.warning(f'Can\'t read directory content {item}. Skip it in list.\n {str(err)}')
                     continue
+                except AccessDeniedError:
+                    continue
+
                 directory_content_list.append(dir_content)
         return directory_content_list
 
