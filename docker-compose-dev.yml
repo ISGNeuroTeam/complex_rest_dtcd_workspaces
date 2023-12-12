@@ -57,7 +57,7 @@ services:
     build:
       context: ./
       dockerfile: ./docs/docker/complex_rest/Dockerfile
-    image: "complex_rest_for_dtcd_workspaces_celery:1.1.5"
+    image: "complex_rest_for_dtcd_workspaces_worker:2.0.0"
     volumes:
       - ./dtcd_workspaces:/complex_rest/plugins/dtcd_workspaces
       - ./logs:/complex_rest/logs
@@ -73,7 +73,7 @@ services:
     build:
       context: ./
       dockerfile: ./docs/docker/complex_rest/Dockerfile
-    image: "complex_rest_for_dtcd_workspaces_celery:1.1.5"
+    image: "complex_rest_for_dtcd_workspaces_celery:2.0.0"
     volumes:
       - ./dtcd_workspaces:/complex_rest/plugins/dtcd_workspaces
       - ./logs:/complex_rest/logs
@@ -89,12 +89,15 @@ services:
     build:
       context: ./
       dockerfile: ./docs/docker/complex_rest/Dockerfile
-    image: "complex_rest_for_dtcd_workspaces:1.1.5"
+    image: "complex_rest_for_dtcd_workspaces:2.0.0"
 
     volumes:
       - ./dtcd_workspaces:/complex_rest/plugins/dtcd_workspaces
       - ./logs:/complex_rest/logs
       - ./tests:/complex_rest/tests
+      - /work/complex_rest/complex_rest:/complex_rest/complex_rest
+      - /work/root_workspaces_directory:/old_workspaces_format
+
 
     environment:
       - REST_CONF=/complex_rest/plugins/dtcd_workspaces/rest.conf
