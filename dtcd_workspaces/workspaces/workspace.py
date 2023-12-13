@@ -67,6 +67,9 @@ class Workspace(DirectoryBaseObject):
     @authz_integration(authz_action='update', id_attr='id')
     @auth_covered_method(action_name='dtcd_workspaces.update')
     def save(self):
+        self._save_actions()
+    
+    def _save_actions(self):
         parent_dir_path = self.absolute_filesystem_path.parent
         if not parent_dir_path.exists():
             raise DirectoryContentException(DirectoryContentException.NO_DIR, str(parent_dir_path))

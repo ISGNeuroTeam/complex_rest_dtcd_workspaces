@@ -270,10 +270,17 @@ class DirectoryContent(IAuthCovered):
             setattr(directory_content_instance, attr_name, kwargs[attr_name])
         if directory_content_instance.id is None:
             directory_content_instance.id = uuid.uuid4()
-        directory_content_instance.save(ignore_authorization=True)
+        directory_content_instance._save_actions()
         return directory_content_instance
 
     def save(self):
+        """
+        Saves object to filesystem storage
+        """
+        return self._save_actions()
+    
+
+    def _save_actions(self):
         """
         Saves object to filesystem storage
         """

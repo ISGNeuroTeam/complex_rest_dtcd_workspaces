@@ -39,12 +39,12 @@ class DirectoryBaseObject(DirectoryContent):
     @authz_integration(authz_action='update', id_attr='id')
     @auth_covered_method(action_name='dtcd_workspaces.update')
     def save(self):
+        self._save_actions()
+
+    def _save_actions(self):
         parent_dir_path = self.absolute_filesystem_path.parent
         if not parent_dir_path.exists():
             raise DirectoryContentException(DirectoryContentException.NO_DIR, str(parent_dir_path))
         self.absolute_filesystem_path.mkdir(exist_ok=True)
         self._write_attributes_to_json_file(self.absolute_content_file_path)
-
-
-
 

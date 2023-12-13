@@ -718,10 +718,10 @@
         } ],
         "icon_uri" : ""
       }, {
-        "name" : "dtcd_workspaces.Workspase:default_resource",
-        "type" : "dtcd_workspaces.Workspase",
+        "name" : "dtcd_workspaces.Workspace:default_resource",
+        "type" : "dtcd_workspaces.Workspace",
         "ownerManagedAccess" : false,
-        "displayName" : "dtcd_workspaces.Workspase:default_resource",
+        "displayName" : "dtcd_workspaces.Workspace:default_resource",
         "attributes" : { },
         "_id" : "873cc3f5-2e97-4708-bccb-842d4db12337",
         "uris" : [ ],
@@ -943,6 +943,18 @@
           "defaultResourceType" : "dtcd_workspaces.WorkspaceTab",
           "applyPolicies" : "[\"Always allow\"]",
           "scopes" : "[\"dtcd_workspaces.read\"]"
+        }
+      }, {
+        "id" : "65b39df6-9811-49d6-898c-a1a2118c3356",
+        "name" : "allow_create_in_workspace_if_not_exist",
+        "description" : "",
+        "type" : "scope",
+        "logic" : "POSITIVE",
+        "decisionStrategy" : "UNANIMOUS",
+        "config" : {
+          "resources" : "[\"dtcd_workspaces.Workspace:default_resource\"]",
+          "scopes" : "[\"dtcd_workspaces.create\"]",
+          "applyPolicies" : "[\"Always allow\"]"
         }
       } ],
       "scopes" : [ {
@@ -1625,7 +1637,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-role-list-mapper", "oidc-usermodel-property-mapper", "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper", "oidc-full-name-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-role-list-mapper", "oidc-usermodel-property-mapper", "saml-user-attribute-mapper", "saml-user-property-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-address-mapper" ]
       }
     }, {
       "id" : "62952a7f-77c9-4164-a952-ad144e178170",
@@ -1652,7 +1664,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-sha256-pairwise-sub-mapper", "saml-user-property-mapper", "oidc-usermodel-attribute-mapper", "oidc-address-mapper", "saml-user-attribute-mapper", "oidc-full-name-mapper", "saml-role-list-mapper", "oidc-usermodel-property-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "oidc-usermodel-property-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-property-mapper", "saml-role-list-mapper", "oidc-address-mapper", "saml-user-attribute-mapper" ]
       }
     } ],
     "org.keycloak.storage.UserStorageProvider" : [ {
@@ -1686,8 +1698,8 @@
           "config" : {
             "ldap.attribute" : [ "whenCreated" ],
             "is.mandatory.in.ldap" : [ "false" ],
-            "always.read.value.from.ldap" : [ "true" ],
             "read.only" : [ "true" ],
+            "always.read.value.from.ldap" : [ "true" ],
             "user.model.attribute" : [ "createTimestamp" ]
           }
         }, {
@@ -1718,8 +1730,8 @@
           "config" : {
             "ldap.attribute" : [ "whenChanged" ],
             "is.mandatory.in.ldap" : [ "false" ],
-            "always.read.value.from.ldap" : [ "true" ],
             "read.only" : [ "true" ],
+            "always.read.value.from.ldap" : [ "true" ],
             "user.model.attribute" : [ "modifyTimestamp" ]
           }
         }, {
@@ -1740,8 +1752,8 @@
           "config" : {
             "ldap.attribute" : [ "uid" ],
             "is.mandatory.in.ldap" : [ "true" ],
-            "always.read.value.from.ldap" : [ "false" ],
             "read.only" : [ "true" ],
+            "always.read.value.from.ldap" : [ "false" ],
             "user.model.attribute" : [ "username" ]
           }
         }, {
@@ -1762,21 +1774,21 @@
         "pagination" : [ "false" ],
         "fullSyncPeriod" : [ "-1" ],
         "startTls" : [ "false" ],
-        "usersDn" : [ "ou=people,dc=planetexpress,dc=com" ],
         "connectionPooling" : [ "false" ],
+        "usersDn" : [ "ou=people,dc=planetexpress,dc=com" ],
         "cachePolicy" : [ "DEFAULT" ],
         "useKerberosForPasswordAuthentication" : [ "false" ],
         "importEnabled" : [ "true" ],
         "enabled" : [ "true" ],
-        "bindCredential" : [ "GoodNewsEveryone" ],
         "usernameLDAPAttribute" : [ "uid" ],
         "bindDn" : [ "cn=admin,dc=planetexpress,dc=com" ],
+        "bindCredential" : [ "GoodNewsEveryone" ],
         "changedSyncPeriod" : [ "-1" ],
         "lastSync" : [ "1693349879" ],
         "vendor" : [ "ad" ],
         "uuidLDAPAttribute" : [ "uid" ],
-        "allowKerberosAuthentication" : [ "false" ],
         "connectionUrl" : [ "ldap://ldap:10389" ],
+        "allowKerberosAuthentication" : [ "false" ],
         "syncRegistrations" : [ "true" ],
         "authType" : [ "simple" ],
         "searchScope" : [ "2" ],
