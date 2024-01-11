@@ -62,7 +62,8 @@ class Workspace(DirectoryBaseObject):
                     'isActive': tab.isActive,
                     'editName': tab.editName,
                     'name': tab.name,
-                    'permissions': tab.permissions
+                    'permissions': tab.permissions,
+                    'order': tab.order,
                 })
     @authz_integration(authz_action='update', id_attr='id')
     @auth_covered_method(action_name='dtcd_workspaces.update')
@@ -100,19 +101,22 @@ class Workspace(DirectoryBaseObject):
                     tab.delete()
                 else:  # update
                     tab_info = tabs_dict.pop(tab.id)
-                    for tab_attr in ('isActive', 'editName', 'name', 'id'):
-                        setattr(tab, tab_attr, tab_info[tab_attr])
+                    for tab_attr in ('isActive', 'editName', 'name', 'id', 'order'):
+                        setattr(tab, tab_attr, tab_info.get(tab_attr, None))
                     tab.save()
 
+        tabs_order_counter = 0
         # create tabs that don't exist
         for tab_id, tab_info in tabs_dict.items():
+            tabs_order_counter = tabs_order_counter + 1            
             tab_path = f'{self.path}/{tab_id}'
             tab = WorkspaceTab.create(
                 tab_path,
-                id=tab_info['id'],
-                isActive=tab_info['isActive'],
-                editName=tab_info['editName'],
-                name=tab_info['name']
+                id=tab_info.get('id', None),
+                isActive=tab_info.get('isActive', None),
+                editName=tab_info.get('editName', None),
+                name=tab_info.get('name', None),
+                order=tab_info.get('order', tabs_order_counter)
             )
         self.content['tabPanelsConfig']['tabsOptions'] = []
 
