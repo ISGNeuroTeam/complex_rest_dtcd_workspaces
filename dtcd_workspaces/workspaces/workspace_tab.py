@@ -6,7 +6,7 @@ class WorkspaceTab(FileBaseObject):
     check_permissions_in_auth_covered_methods = False
     saved_to_file_attributes = [
           'id', 'creation_time', 'modification_time', 'keychain_id', 'owner_guid',
-          'editName', 'name', 'isActive', 'order'
+          'editName', 'name', 'isActive', 'order', 'meta'
     ]
     object_type_postfix = 'tab'
 
@@ -21,6 +21,7 @@ class WorkspaceTab(FileBaseObject):
         self.editName = None
         self.name = None
         self.order = None
+        self.meta = {}
 
     @property
     def title(self) -> str:

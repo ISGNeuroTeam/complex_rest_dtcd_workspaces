@@ -64,6 +64,7 @@ class Workspace(DirectoryBaseObject):
                     'name': tab.name,
                     'permissions': tab.permissions,
                     'order': tab.order,
+                    'meta': tab.meta
                 })
     @authz_integration(authz_action='update', id_attr='id')
     @auth_covered_method(action_name='dtcd_workspaces.update')
@@ -103,6 +104,7 @@ class Workspace(DirectoryBaseObject):
                     tab_info = tabs_dict.pop(tab.id)
                     for tab_attr in ('isActive', 'editName', 'name', 'id', 'order'):
                         setattr(tab, tab_attr, tab_info.get(tab_attr, None))
+                    setattr(tab, 'meta', tab_info.get('meta', {}))
                     tab.save()
 
         tabs_order_counter = 0
@@ -116,7 +118,8 @@ class Workspace(DirectoryBaseObject):
                 isActive=tab_info.get('isActive', None),
                 editName=tab_info.get('editName', None),
                 name=tab_info.get('name', None),
-                order=tab_info.get('order', tabs_order_counter)
+                order=tab_info.get('order', tabs_order_counter),
+                meta=tab_info.get('meta', dict())
             )
         self.content['tabPanelsConfig']['tabsOptions'] = []
 
