@@ -1,0 +1,20 @@
+0. Update complex_rest up to 2.0.1
+
+1. Backup  `root_workspaces_directory` to another directory (<directory_with_workspaces>)
+2. Remove `root_workspaces_directory`
+3. Unpack new version of plugin
+4. Create `root_workspaces_directory`
+```bash
+mkdir -p /opt/otp/complex_rest/plugins/dtcd_workspaces/root_workspaces_directory/
+```
+5. Run complex_rest
+6. Format  workspaces  
+```bash
+. ./venv/bin/activate
+./complex_rest/manage.py change_workspace_format_from_0_2_6_to_1_0_0  <directory_with_workspaces>
+```
+7. Check keycloak resources created 
+```
+https://localhost:8447
+wdcplatform-> clients -> complex_rest -> authorization -> resources
+```
